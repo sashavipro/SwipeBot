@@ -1,0 +1,287 @@
+# Russian translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-01-14 18:59+0300\n"
+"PO-Revision-Date: 2026-01-14 13:46+0300\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: src/bot/handlers/common.py:34
+msgid "Welcome to Swipe! Select:"
+msgstr "Добро пожаловать в Swipe! Выберите:"
+
+#: src/bot/handlers/common.py:45
+msgid "Select the interface language:"
+msgstr "Выберите язык интерфейса:"
+
+#: src/bot/handlers/common.py:55 src/bot/handlers/common.py:71
+msgid "Welcome to Swipe! Select an action:"
+msgstr "Добро пожаловать в Swipe! Выберите действие:"
+
+#: src/bot/handlers/common.py:68
+msgid "Language changed!"
+msgstr "Язык изменился!"
+
+#: src/bot/handlers/common.py:83
+msgid "Nothing to cancel."
+msgstr "Нет ничего для отмены."
+
+#: src/bot/handlers/common.py:87
+msgid "Action canceled. Main menu:"
+msgstr "Действие отменено. Главное меню:"
+
+#: src/bot/handlers/auth/login.py:26 src/bot/handlers/auth/login.py:60
+msgid "Please enter your **Email**:"
+msgstr "Введите свой **адрес электронной почты**:"
+
+#: src/bot/handlers/auth/login.py:38 src/bot/handlers/auth/registration.py:94
+msgid "Invalid email format. Try again:"
+msgstr "Неверный формат адреса электронной почты. Повторите попытку:"
+
+#: src/bot/handlers/auth/login.py:46
+msgid "Enter your **Password**:"
+msgstr "Введите свой **пароль**:"
+
+#: src/bot/handlers/auth/login.py:87
+msgid "Logging in..."
+msgstr "Вход в систему..."
+
+#: src/bot/handlers/auth/login.py:100
+msgid "**Successfully logged in!**"
+msgstr "**Успешно вошли в систему!**"
+
+#: src/bot/handlers/auth/login.py:107
+#, python-brace-format
+msgid "Login failed: {error}"
+msgstr "Не удалось войти: {error}"
+
+#: src/bot/handlers/auth/registration.py:27
+msgid ""
+"**Registration Step 1/5**\n"
+"\n"
+"Enter your **First Name**:"
+msgstr ""
+"**Регистрация, шаг 1 из 5**\n"
+"\n"
+"Введите свое **Имя**:"
+
+#: src/bot/handlers/auth/registration.py:39
+msgid "Too short. Please enter real First Name:"
+msgstr "Слишком короткое. Введите настоящее имя:"
+
+#: src/bot/handlers/auth/registration.py:44
+msgid ""
+"**Step 2/5**\n"
+"\n"
+"Enter your **Last Name**:"
+msgstr ""
+"**Шаг 2/5**\n"
+"\n"
+"Введите свою **фамилию**:"
+
+#: src/bot/handlers/auth/registration.py:56
+msgid "Enter your **First Name**:"
+msgstr "Введите свое **имя**"
+
+#: src/bot/handlers/auth/registration.py:69
+msgid ""
+"**Step 3/5**\n"
+"\n"
+"Enter your **Email**:"
+msgstr ""
+"**Шаг 3/5**\n"
+"\n"
+"Введите свой **адрес электронной почты**:"
+
+#: src/bot/handlers/auth/registration.py:81
+msgid "Enter your **Last Name**:"
+msgstr "Введите свою **фамилию**:"
+
+#: src/bot/handlers/auth/registration.py:100
+msgid ""
+"**Step 4/5**\n"
+"\n"
+"Share your **Phone Number** using the button below or type it manually "
+"(+123...):"
+msgstr ""
+"**Шаг 4/5**\n"
+"\n"
+"Поделитесь своим **номером телефона**, нажав кнопку ниже, или введите его вручную. "
+"(+123...):"
+
+#: src/bot/handlers/auth/registration.py:116
+msgid "Enter your **Email**:"
+msgstr "Введите свой **адрес электронной почты**:"
+
+#: src/bot/handlers/auth/registration.py:128
+#: src/bot/keyboards/reply/get_contact.py:15
+#, fuzzy
+msgid "Cancel Registration"
+msgstr "Отменить регистрацию"
+
+#: src/bot/handlers/auth/registration.py:131
+#, fuzzy
+msgid "Registration canceled."
+msgstr "Регистрация отменена"
+
+#: src/bot/handlers/auth/registration.py:133
+msgid "Main Menu:"
+msgstr "Главное меню:"
+
+#: src/bot/handlers/auth/registration.py:140
+msgid "Invalid phone format. Please use +123456789."
+msgstr "Неверный формат телефона. Пожалуйста, используйте +123456789."
+
+#: src/bot/handlers/auth/registration.py:147
+msgid ""
+"**Step 5/5**\n"
+"\n"
+"Create a **Password** for your account:"
+msgstr ""
+"**Шаг 5/5**\n"
+"\n"
+"Создайте **пароль** для своей учетной записи:"
+
+#: src/bot/handlers/auth/registration.py:151
+msgid "Type password:"
+msgstr "Введите пароль:"
+
+#: src/bot/handlers/auth/registration.py:162
+msgid "Share your **Phone Number**:"
+msgstr "Поделитесь своим **номером телефона**:"
+
+#: src/bot/handlers/auth/registration.py:174
+msgid "Password must be at least 6 characters."
+msgstr "Пароль должен состоять как минимум из 6 символов."
+
+#: src/bot/handlers/auth/registration.py:179
+msgid "Sending data to server..."
+msgstr "Отправка данных на сервер..."
+
+#: src/bot/handlers/auth/registration.py:186
+#, python-brace-format
+msgid ""
+"Data accepted!\n"
+"\n"
+"We sent a verification code to **{email}**.\n"
+"\n"
+"**Enter the code below:**"
+msgstr ""
+"Данные приняты!\n"
+"\n"
+"Мы отправили код подтверждения на **{email}**.\n"
+"\n"
+"**Введите код ниже:**"
+
+#: src/bot/handlers/auth/registration.py:196
+#, python-brace-format
+msgid ""
+"Registration failed: {error}\n"
+"\n"
+"Please try changing data or cancel."
+msgstr ""
+"Регистрация не удалась: {ошибка}\n"
+"\n"
+"Попробуйте изменить данные или отменить."
+
+#: src/bot/handlers/auth/registration.py:224
+#, python-brace-format
+msgid ""
+"**Registration Successful!**\n"
+"\n"
+"User:\n"
+"{first} {last}\n"
+"{email}\n"
+"{phone}\n"
+"\n"
+"You are now logged in!"
+msgstr ""
+"**Registration Successful!**\n"
+"\n"
+"Пользователь:\n"
+"{первый} {последний}\n"
+"{email}\n"
+"{телефон}\n"
+"\n"
+"Вы сейчас вошли в систему!"
+
+#: src/bot/handlers/auth/registration.py:238
+#, python-brace-format
+msgid ""
+"Code verification failed: {error}.\n"
+"Check code and try again:"
+msgstr ""
+"Проверка кода не удалась: {error}.\n"
+"Проверьте код и попробуйте еще раз:"
+
+#: src/bot/handlers/auth/reset_password.py:25
+msgid ""
+"**Password Reset**\n"
+"\n"
+"Enter your **Email**:"
+msgstr ""
+"**Сброс пароля**\n"
+"\n"
+"Введите свой **адрес электронной почты**:"
+
+#: src/bot/handlers/auth/reset_password.py:43
+msgid "Code sent. **Enter the code:**"
+msgstr "Код отправлен. **Введите код:**"
+
+#: src/bot/handlers/auth/reset_password.py:46
+#: src/bot/handlers/auth/reset_password.py:79
+#, python-brace-format
+msgid "Error: {error}"
+msgstr "Ошибка: {error}"
+
+#: src/bot/handlers/auth/reset_password.py:57
+msgid "Code accepted. **Enter NEW password:**"
+msgstr "Код принят. **Введите НОВЫЙ пароль:**"
+
+#: src/bot/handlers/auth/reset_password.py:74
+msgid "Password updated! Login now."
+msgstr "Пароль обновлен! Войдите сейчас."
+
+#: src/bot/keyboards/inline/language.py:18 src/bot/keyboards/inline/login.py:18
+#: src/bot/keyboards/inline/navigation.py:24
+msgid "Back"
+msgstr "Назад"
+
+#: src/bot/keyboards/inline/login.py:16
+msgid "Forgot Password?"
+msgstr "Забыли пароль?"
+
+#: src/bot/keyboards/inline/login.py:19
+#: src/bot/keyboards/inline/navigation.py:15
+#: src/bot/keyboards/inline/navigation.py:25
+msgid "Cancel"
+msgstr "Отмена"
+
+#: src/bot/keyboards/inline/start.py:15
+msgid "Login"
+msgstr "Вход"
+
+#: src/bot/keyboards/inline/start.py:17
+msgid "Registration"
+msgstr "Регистрация"
+
+#: src/bot/keyboards/inline/start.py:20
+msgid "Язык / Language"
+msgstr ""
+
+#: src/bot/keyboards/reply/get_contact.py:14
+msgid "Share my contact"
+msgstr "Поделиться моими контактами"
