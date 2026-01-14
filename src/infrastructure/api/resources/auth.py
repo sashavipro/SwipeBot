@@ -1,0 +1,42 @@
+"""src/infrastructure/api/resources/auth.py."""
+
+from typing import Dict, Any
+
+
+class AuthResource:
+    """
+    Handles authentication-related API calls.
+    """
+
+    def __init__(self, client):
+        self.client = client
+
+    async def login(self, email: str, password: str) -> Dict[str, Any]:
+        """Authenticates a user."""
+        return await self.client.make_request(
+            "POST", "/auth/login", json={"email": email, "password": password}
+        )
+
+    async def register(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Initiates user registration."""
+        return await self.client.make_request("POST", "/auth/register", json=user_data)
+
+    async def verify_registration(self, email: str, code: str) -> Dict[str, Any]:
+        """Verifies registration code."""
+        return await self.client.make_request(
+            "POST", "/auth/verify", json={"email": email, "code": code}
+        )
+
+    async def forgot_password(self, email: str) -> Dict[str, Any]:
+        """Requests password reset."""
+        return await self.client.make_request(
+            "POST", "/auth/forgot-password", json={"email": email}
+        )
+
+    async def reset_password(self, token: str, new_password: str) -> Dict[str, Any]:
+        """Sets new password."""
+        return await self.client.make_request(
+            "POST",
+            "/auth/reset-password",
+            json={"token": token, "new_password": new_password},
+        )
