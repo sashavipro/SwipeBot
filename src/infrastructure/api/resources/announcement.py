@@ -17,7 +17,7 @@ class AnnouncementsResource:
         """Fetches paginated announcements."""
         params = f"?limit={limit}&offset={offset}"
         return await self.client.make_request(
-            "GET", f"/announcements{params}", token=token
+            "GET", f"/announcements/{params}", token=token
         )
 
     async def create_announcement(
@@ -25,5 +25,5 @@ class AnnouncementsResource:
     ) -> Dict[str, Any]:
         """Creates a new announcement."""
         return await self.client.make_request(
-            "POST", "/announcements", token=token, json=data
+            "POST", "/announcements/", token=token, json=data
         )

@@ -2,10 +2,12 @@
 
 from .api import execute_with_refresh
 from .ui import handle_cancel, remove_reply_keyboard, cleanup_last_step
+from .images import encode_image_to_base64
 
 __all__ = [
     "execute_with_refresh",
     "handle_cancel",
     "remove_reply_keyboard",
     "cleanup_last_step",
+    "encode_image_to_base64",
 ]

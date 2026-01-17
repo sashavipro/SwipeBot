@@ -64,12 +64,3 @@ async def show_listings(query: CallbackQuery):
     """
     await query.answer()
     await query.message.answer(_("Listings feature is under construction!"))
-
-
-@router.callback_query(MenuCallback.filter(F.action == "create_listing"))
-async def create_listing(query: CallbackQuery):
-    """
-    Handles 'Create Listing' button click.
-    """
-    await query.answer()
-    await query.message.answer(_("Create Listing feature is under construction!"))
