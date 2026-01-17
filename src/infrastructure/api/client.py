@@ -1,9 +1,11 @@
 """src/infrastructure/api/client.py."""
 
 from src.infrastructure.api.base import BaseAPIClient
-from src.infrastructure.api.resources.auth import AuthResource
-from src.infrastructure.api.resources.users import UsersResource
-from src.infrastructure.api.resources.announcement import AnnouncementsResource
+from src.infrastructure.api.resources import (
+    AuthResource,
+    UsersResource,
+    AnnouncementsResource,
+)
 
 
 class SwipeApiClient(BaseAPIClient):
@@ -17,4 +19,4 @@ class SwipeApiClient(BaseAPIClient):
         super().__init__()
         self.auth = AuthResource(self)
         self.users = UsersResource(self)
-        self.announcement = AnnouncementsResource(self)
+        self.announcements = AnnouncementsResource(self)

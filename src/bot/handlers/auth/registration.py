@@ -4,14 +4,19 @@ import re
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
-from aiogram.utils.i18n import gettext as _
+from aiogram.utils.i18n import gettext as _, lazy_gettext as __
+
 from src.bot.callbacks.menu import MenuCallback
-from src.bot.keyboards.inline.navigation import get_cancel_keyboard, get_back_keyboard
-from src.bot.keyboards.inline.start import get_start_keyboard
-from src.bot.keyboards.reply.get_contact import get_contact_keyboard
-from src.bot.states.auth import RegistrationSG
+from src.bot.keyboards.inline import get_start_keyboard, get_main_menu_keyboard
+from src.bot.keyboards.reply import (
+    get_contact_keyboard,
+    get_cancel_keyboard,
+    get_back_keyboard,
+)
+from src.bot.states import RegistrationSG
+from src.bot.utils import handle_cancel, remove_reply_keyboard, cleanup_last_step
 from src.database.models import BotUser
-from src.infrastructure import SwipeApiClient, SwipeAPIError
+from src.infrastructure.api import SwipeApiClient, SwipeAPIError
 
 router = Router()
 
@@ -20,118 +25,137 @@ router = Router()
 async def start_reg(query: CallbackQuery, state: FSMContext):
     """
     Starts the registration process.
-    Transitions state to InputFirstName.
     """
     await state.set_state(RegistrationSG.InputFirstName)
-    await query.message.edit_text(
+    await query.message.delete()
+
+    msg = await query.message.answer(
         text=_("**Registration Step 1/5**\n\nEnter your **First Name**:"),
         reply_markup=get_cancel_keyboard(),
     )
+    await state.update_data(last_bot_msg_id=msg.message_id)
 
 
 @router.message(RegistrationSG.InputFirstName)
 async def input_first_name(message: Message, state: FSMContext):
     """
     Validates and saves the first name.
-    Transitions state to InputLastName.
     """
-    if len(message.text) < 2:
-        await message.answer(_("Too short. Please enter real First Name:"))
+    if await handle_cancel(message, state):
         return
+
+    if len(message.text) < 2:
+        msg = await message.answer(_("Too short. Please enter real First Name:"))
+        await state.update_data(last_bot_msg_id=msg.message_id)
+        return
+
+    await cleanup_last_step(state, message)
+
     await state.update_data(first_name=message.text)
     await state.set_state(RegistrationSG.InputLastName)
-    await message.answer(
+
+    msg = await message.answer(
         text=_("**Step 2/5**\n\nEnter your **Last Name**:"),
-        reply_markup=get_back_keyboard("back_to_firstname"),
+        reply_markup=get_back_keyboard(),
     )
+    await state.update_data(last_bot_msg_id=msg.message_id)
 
 
-@router.callback_query(F.data == "back_to_firstname")
-async def back_to_firstname(query: CallbackQuery, state: FSMContext):
+@router.message(RegistrationSG.InputFirstName, F.text == __("Back"))
+async def back_to_start(message: Message, state: FSMContext):
     """
-    Returns to the First Name input step.
+    Returns to the main menu.
     """
-    await state.set_state(RegistrationSG.InputFirstName)
-    await query.message.edit_text(
-        text=_("Enter your **First Name**:"), reply_markup=get_cancel_keyboard()
-    )
+    await state.clear()
+    await message.answer(_("Registration canceled."), reply_markup=get_start_keyboard())
 
 
 @router.message(RegistrationSG.InputLastName)
 async def input_last_name(message: Message, state: FSMContext):
     """
     Saves the last name.
-    Transitions state to InputEmail.
     """
+    if await handle_cancel(message, state):
+        return
+
+    await cleanup_last_step(state, message)
+
     await state.update_data(last_name=message.text)
     await state.set_state(RegistrationSG.InputEmail)
-    await message.answer(
+
+    msg = await message.answer(
         text=_("**Step 3/5**\n\nEnter your **Email**:"),
-        reply_markup=get_back_keyboard("back_to_lastname"),
+        reply_markup=get_back_keyboard(),
     )
+    await state.update_data(last_bot_msg_id=msg.message_id)
 
 
-@router.callback_query(F.data == "back_to_lastname")
-async def back_to_lastname(query: CallbackQuery, state: FSMContext):
+@router.message(RegistrationSG.InputLastName, F.text == __("Back"))
+async def back_to_firstname(message: Message, state: FSMContext):
     """
-    Returns to the Last Name input step.
+    Returns to First Name input.
     """
-    await state.set_state(RegistrationSG.InputLastName)
-    await query.message.edit_text(
-        text=_("Enter your **Last Name**:"),
-        reply_markup=get_back_keyboard("back_to_firstname"),
+    await cleanup_last_step(state, message)
+
+    await state.set_state(RegistrationSG.InputFirstName)
+    msg = await message.answer(
+        text=_("Enter your **First Name**:"), reply_markup=get_cancel_keyboard()
     )
+    await state.update_data(last_bot_msg_id=msg.message_id)
 
 
 @router.message(RegistrationSG.InputEmail)
 async def input_email(message: Message, state: FSMContext):
     """
     Validates and saves the email.
-    Transitions state to InputPhone.
     """
+    if await handle_cancel(message, state):
+        return
+
     email = message.text.strip()
     if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        await message.answer(_("Invalid email format. Try again:"))
+        msg = await message.answer(_("Invalid email format. Try again:"))
+        await state.update_data(last_bot_msg_id=msg.message_id)
         return
+
+    await cleanup_last_step(state, message)
+
     await state.update_data(email=email)
     await state.set_state(RegistrationSG.InputPhone)
-    await message.answer(
+
+    msg = await message.answer(
         text=_(
             "**Step 4/5**\n\nShare your **Phone Number** using the button below or "
             "type it manually (+123...):"
         ),
         reply_markup=get_contact_keyboard(),
     )
+    await state.update_data(last_bot_msg_id=msg.message_id)
 
 
-@router.callback_query(F.data == "back_to_email")
-async def back_to_email(query: CallbackQuery, state: FSMContext):
+@router.message(RegistrationSG.InputEmail, F.text == __("Back"))
+async def back_to_lastname(message: Message, state: FSMContext):
     """
-    Returns to the Email input step.
+    Returns to Last Name input.
     """
-    await state.set_state(RegistrationSG.InputEmail)
-    msg = await query.message.answer("...", reply_markup=ReplyKeyboardRemove())
-    await msg.delete()
-    await query.message.edit_text(
-        text=_("Enter your **Email**:"),
-        reply_markup=get_back_keyboard("back_to_lastname"),
+    await cleanup_last_step(state, message)
+
+    await state.set_state(RegistrationSG.InputLastName)
+    msg = await message.answer(
+        text=_("Enter your **Last Name**:"), reply_markup=get_back_keyboard()
     )
+    await state.update_data(last_bot_msg_id=msg.message_id)
 
 
 @router.message(RegistrationSG.InputPhone)
 @router.message(RegistrationSG.InputPhone, F.contact)
 async def input_phone(message: Message, state: FSMContext):
     """
-    Validates and saves the phone number (from text or contact).
-    Transitions state to InputPassword.
+    Validates and saves the phone number.
     """
-    if message.text and message.text == _("Cancel Registration"):
-        await state.clear()
-        await message.answer(
-            _("Registration canceled."), reply_markup=ReplyKeyboardRemove()
-        )
-        await message.answer(_("Main Menu:"), reply_markup=get_start_keyboard())
+    if await handle_cancel(message, state):
         return
+
     if message.contact:
         phone = message.contact.phone_number
     else:
@@ -139,49 +163,69 @@ async def input_phone(message: Message, state: FSMContext):
         if not re.match(r"^\+?\d{7,15}$", phone):
             await message.answer(_("Invalid phone format. Please use +123456789."))
             return
+
     if not phone.startswith("+"):
         phone = "+" + phone
+
+    await cleanup_last_step(state, message)
+
     await state.update_data(phone=phone)
     await state.set_state(RegistrationSG.InputPassword)
-    await message.answer(
+
+    msg = await message.answer(
         text=_("**Step 5/5**\n\nCreate a **Password** for your account:"),
-        reply_markup=ReplyKeyboardRemove(),
+        reply_markup=get_back_keyboard(),
     )
-    await message.answer(
-        text=_("Type password:"), reply_markup=get_back_keyboard("back_to_phone")
-    )
+    await state.update_data(last_bot_msg_id=msg.message_id)
 
 
-@router.callback_query(F.data == "back_to_phone")
-async def back_to_phone(query: CallbackQuery, state: FSMContext):
+@router.message(RegistrationSG.InputPassword, F.text == __("Back"))
+async def back_to_phone_reply(message: Message, state: FSMContext):
     """
-    Returns to the Phone input step.
+    Returns to Phone input step.
     """
+    await cleanup_last_step(state, message)
+
     await state.set_state(RegistrationSG.InputPhone)
-    await query.message.answer(
+    msg = await message.answer(
         text=_("Share your **Phone Number**:"), reply_markup=get_contact_keyboard()
     )
-    await query.message.delete()
+    await state.update_data(last_bot_msg_id=msg.message_id)
 
 
 @router.message(RegistrationSG.InputPassword)
 async def input_password(message: Message, state: FSMContext):
     """
     Saves the password and submits registration data to the API.
-    Transitions state to InputCode upon success.
     """
+    if await handle_cancel(message, state):
+        return
+
+    if message.text == _("Back"):
+        await back_to_phone_reply(message, state)
+        return
+
     if len(message.text) < 6:
         await message.answer(_("Password must be at least 6 characters."))
         return
+
+    await cleanup_last_step(state, message)
+
     await state.update_data(password=message.text)
     user_data = await state.get_data()
+
     api = SwipeApiClient()
-    wait_msg = await message.answer(_("Sending data to server..."))
+    wait_msg = await message.answer(
+        _("Sending data to server..."), reply_markup=ReplyKeyboardRemove()
+    )
+
     try:
         await api.auth.register(user_data)
+
         await wait_msg.delete()
         await state.set_state(RegistrationSG.InputCode)
-        await message.answer(
+
+        msg = await message.answer(
             text=_(
                 "Data accepted!\n\n"
                 "We sent a verification code to **{email}**.\n\n"
@@ -189,50 +233,81 @@ async def input_password(message: Message, state: FSMContext):
             ).format(email=user_data["email"]),
             reply_markup=get_cancel_keyboard(),
         )
+        await state.update_data(last_bot_msg_id=msg.message_id)
+
     except SwipeAPIError as e:
         await wait_msg.delete()
+
+        if e.status_code == 409:
+            await state.clear()
+            await message.answer(
+                _("**You are already registered!**\n\nPlease log in."),
+                reply_markup=get_start_keyboard(),
+            )
+            return
+
         await message.answer(
             text=_(
                 "Registration failed: {error}\n\nPlease try changing data or cancel."
             ).format(error=e.message),
-            reply_markup=get_back_keyboard("back_to_password"),
+            reply_markup=get_back_keyboard(),
         )
 
 
 @router.message(RegistrationSG.InputCode)
 async def input_code(message: Message, state: FSMContext):
     """
-    Verifies the email code via API.
-    Logs the user in and saves the token to MongoDB.
+    Verifies the email code and logs the user in.
     """
+    if await handle_cancel(message, state):
+        return
+
     code = message.text.strip()
     data = await state.get_data()
     api = SwipeApiClient()
+
     try:
         await api.auth.verify_registration(email=data["email"], code=code)
         login_resp = await api.auth.login(
             email=data["email"], password=data["password"]
         )
+
         user = await BotUser.find_one(BotUser.telegram_id == message.from_user.id)
         if user:
             user.api_access_token = login_resp["access_token"]
             user.api_refresh_token = login_resp["refresh_token"]
             await user.save()
-        await state.clear()
+
+        await cleanup_last_step(state, message)
+        await remove_reply_keyboard(message)
+
         await message.answer(
             text=_(
                 "**Registration Successful!**\n\n"
-                "User:\n{first} {last}\n{email}\n{phone}\n\n"
+                "User:\n{first} {last}\n{email}\n{phone}\n"
+                "Password: <tg-spoiler>{password}</tg-spoiler>\n\n"
                 "You are now logged in!"
             ).format(
                 first=data["first_name"],
                 last=data["last_name"],
                 email=data["email"],
                 phone=data["phone"],
+                password=data["password"],
             ),
-            reply_markup=get_start_keyboard(),
+            reply_markup=get_main_menu_keyboard(),
         )
+
+        await state.clear()
+
     except SwipeAPIError as e:
+        if e.status_code == 409:
+            await state.clear()
+            await message.answer(
+                _("**You are already registered!**\n\nPlease log in."),
+                reply_markup=get_start_keyboard(),
+            )
+            return
+
         await message.answer(
             text=_(
                 "Code verification failed: {error}.\nCheck code and try again:"

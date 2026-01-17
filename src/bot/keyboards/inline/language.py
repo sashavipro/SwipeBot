@@ -3,8 +3,8 @@
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.utils.i18n import gettext as _
-from src.bot.callbacks.language import LanguageCallback
-from src.bot.callbacks.menu import MenuCallback
+from src.bot.callbacks import LanguageCallback
+from src.bot.callbacks import MenuCallback
 
 
 def get_language_keyboard() -> InlineKeyboardMarkup:

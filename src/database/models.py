@@ -14,7 +14,7 @@ class BotUser(Document):
     telegram_id: int = Field(index=True, unique=True)
     username: Optional[str] = None
     full_name: str
-    language_code: str = "ru"
+    language_code: str = "en"
 
     api_access_token: Optional[str] = None
     api_refresh_token: Optional[str] = None

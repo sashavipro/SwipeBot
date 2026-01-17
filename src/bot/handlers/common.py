@@ -4,12 +4,15 @@ from aiogram import Router, F
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
-from aiogram.utils.i18n import gettext as _
-from src.bot.callbacks.language import LanguageCallback
-from src.bot.callbacks.menu import MenuCallback
-from src.bot.keyboards.inline.language import get_language_keyboard
-from src.bot.keyboards.inline.start import get_start_keyboard
-from src.database.models import BotUser
+from aiogram.utils.i18n import gettext as _, lazy_gettext as __
+from src.bot.callbacks import MenuCallback, LanguageCallback
+from src.bot.keyboards.inline import (
+    get_start_keyboard,
+    get_language_keyboard,
+    get_main_menu_keyboard,
+)
+from src.bot.utils import handle_cancel
+from src.database import BotUser
 
 router = Router()
 
@@ -18,7 +21,7 @@ router = Router()
 async def cmd_start(message: Message):
     """
     Handles the /start command.
-    Creates a new user in MongoDB if they don't exist.
+    Checks auth status and shows appropriate menu.
     """
     user = await BotUser.find_one(BotUser.telegram_id == message.from_user.id)
     if not user:
@@ -30,10 +33,18 @@ async def cmd_start(message: Message):
         )
         await user.create()
 
-    await message.answer(
-        text=_("Welcome to Swipe! Select:"),
-        reply_markup=get_start_keyboard(),
-    )
+    if user.api_access_token:
+        await message.answer(
+            text=_("Welcome back, {name}! Select an action:").format(
+                name=user.full_name
+            ),
+            reply_markup=get_main_menu_keyboard(),
+        )
+    else:
+        await message.answer(
+            text=_("Welcome to Swipe! Select:"),
+            reply_markup=get_start_keyboard(),
+        )
 
 
 @router.callback_query(MenuCallback.filter(F.action == "language"))
@@ -65,24 +76,39 @@ async def set_language(query: CallbackQuery, callback_data: LanguageCallback, i1
     if user:
         user.language_code = callback_data.code
         await user.save()
+
     await query.answer(_("Language changed!"))
     i18n.ctx_locale.set(callback_data.code)
-    await query.message.edit_text(
-        text=_("Welcome to Swipe! Select an action:"), reply_markup=get_start_keyboard()
-    )
+
+    if user and user.api_access_token:
+        keyboard = get_main_menu_keyboard()
+    else:
+        keyboard = get_start_keyboard()
+
+    await query.message.edit_text(text=_("Select an action:"), reply_markup=keyboard)
 
 
-@router.callback_query(MenuCallback.filter(F.action == "cancel"))
-async def cancel_action(query: CallbackQuery, state: FSMContext):
+@router.message(F.text == __("Cancel"))
+async def cancel_action_reply(message: Message, state: FSMContext):
     """
-    Universal state cancellation handler.
-    Clears the current FSM state and returns to the main menu.
+    Handles the 'Cancel' text button (Global).
     """
-    current_state = await state.get_state()
-    if current_state is None:
-        await query.answer(_("Nothing to cancel."))
-        return
+    await handle_cancel(message, state)
+
+
+@router.callback_query(MenuCallback.filter(F.action == "logout"))
+async def logout_user(query: CallbackQuery, state: FSMContext):
+    """
+    Logs out the user by clearing tokens from MongoDB.
+    """
+    user = await BotUser.find_one(BotUser.telegram_id == query.from_user.id)
+    if user:
+        user.api_access_token = None
+        user.api_refresh_token = None
+        await user.save()
+
     await state.clear()
+
     await query.message.edit_text(
-        text=_("Action canceled. Main menu:"), reply_markup=get_start_keyboard()
+        text=_("You have successfully logged out."), reply_markup=get_start_keyboard()
     )

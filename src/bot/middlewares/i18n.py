@@ -4,7 +4,7 @@ from typing import Any, Dict, Awaitable, Callable
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject, User
 from aiogram.utils.i18n import I18n
-from src.database.models import BotUser
+from src.database import BotUser
 
 
 class LanguageMiddleware(BaseMiddleware):

@@ -1,4 +1,4 @@
-"""src/client.py."""
+"""src/main.py."""
 
 import asyncio
 import logging
@@ -7,13 +7,12 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.utils.i18n import I18n
-from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
+from motor.motor_asyncio import AsyncIOMotorClient
 from src.bot.handlers import main_router
-from src.bot.middlewares.i18n import LanguageMiddleware
+from src.bot.middlewares import LanguageMiddleware
 from src.config import settings
-from src.database.models import BotUser
-from src.database.redis import get_redis_client
+from src.database import BotUser, get_redis_client
 
 
 async def on_startup():

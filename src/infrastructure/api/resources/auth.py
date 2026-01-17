@@ -40,3 +40,12 @@ class AuthResource:
             "/auth/reset-password",
             json={"token": token, "new_password": new_password},
         )
+
+    async def refresh_tokens(self, refresh_token: str) -> Dict[str, Any]:
+        """
+        Refreshes the access token using the refresh token.
+        Endpoint: POST /auth/refresh
+        """
+        return await self.client.make_request(
+            "POST", "/auth/refresh", json={"refresh_token": refresh_token}
+        )
