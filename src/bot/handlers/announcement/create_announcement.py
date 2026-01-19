@@ -1,21 +1,26 @@
-"""src/bot/handlers/announcement.py."""
+"""src/bot/handlers/announcement/create_announcement.py."""
 
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.utils.i18n import gettext as _, lazy_gettext as __
-from src.bot.callbacks.menu import MenuCallback
-from src.bot.keyboards.inline import get_start_keyboard
-from src.bot.keyboards.reply import get_cancel_keyboard, get_back_keyboard
-from src.bot.keyboards.reply.announcement import (
+from src.bot.callbacks import MenuCallback
+from src.bot.keyboards.inline import get_main_menu_keyboard
+from src.bot.keyboards.reply import (
+    get_cancel_keyboard,
+    get_back_keyboard,
     get_location_keyboard,
     get_done_keyboard,
 )
-from src.bot.states.announcement import CreateAnnouncementSG
-from src.bot.utils import handle_cancel, cleanup_last_step, remove_reply_keyboard
-from src.bot.utils.api import execute_with_refresh
-from src.bot.utils.images import encode_image_to_base64
-from src.database.models import BotUser
+from src.bot.states import CreateAnnouncementSG
+from src.bot.utils import (
+    handle_cancel,
+    cleanup_last_step,
+    remove_reply_keyboard,
+    execute_with_refresh,
+    encode_image_to_base64,
+)
+from src.database import BotUser
 from src.infrastructure.api import SwipeApiClient, SwipeAPIError
 
 router = Router()
@@ -274,7 +279,8 @@ async def finish_creation(message: Message, state: FSMContext):
 
         await wait_msg.delete()
         await message.answer(
-            _("**Listing created successfully!**"), reply_markup=get_start_keyboard()
+            _("**Listing created successfully!**"),
+            reply_markup=get_main_menu_keyboard(),
         )
         await state.clear()
 
@@ -282,6 +288,6 @@ async def finish_creation(message: Message, state: FSMContext):
         await wait_msg.delete()
         await message.answer(
             _("Failed to create listing: {error}").format(error=e.message),
-            reply_markup=get_start_keyboard(),
+            reply_markup=get_main_menu_keyboard(),
         )
         await state.clear()

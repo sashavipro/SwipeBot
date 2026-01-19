@@ -10,6 +10,7 @@ from src.database import BotUser
 class LanguageMiddleware(BaseMiddleware):
     """
     Middleware for determining and setting the user's language.
+    Also injects the 'user' (BotUser) into the handler arguments.
     """
 
     # pylint: disable=too-few-public-methods
@@ -29,14 +30,15 @@ class LanguageMiddleware(BaseMiddleware):
         Processes the incoming update.
         """
         tg_user: User | None = data.get("event_from_user")
-
         user: BotUser | None = data.get("user")
 
         if not user and tg_user:
             user = await BotUser.find_one(BotUser.telegram_id == tg_user.id)
 
-        locale = "en"
+        if user:
+            data["user"] = user
 
+        locale = "en"
         if user and user.language_code:
             locale = user.language_code
         elif tg_user and tg_user.language_code:

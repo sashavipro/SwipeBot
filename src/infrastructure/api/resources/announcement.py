@@ -14,7 +14,9 @@ class AnnouncementsResource:
     async def get_announcements(
         self, token: str, limit: int = 10, offset: int = 0
     ) -> List[Dict[str, Any]]:
-        """Fetches paginated announcements."""
+        """
+        Fetches paginated announcements.
+        """
         params = f"?limit={limit}&offset={offset}"
         return await self.client.make_request(
             "GET", f"/announcements/{params}", token=token
@@ -23,7 +25,20 @@ class AnnouncementsResource:
     async def create_announcement(
         self, token: str, data: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Creates a new announcement."""
+        """
+        Creates a new announcement.
+        """
         return await self.client.make_request(
             "POST", "/announcements/", token=token, json=data
+        )
+
+    async def get_my_announcements(
+        self, token: str, limit: int = 10, offset: int = 0
+    ) -> List[Dict[str, Any]]:
+        """
+        Fetches announcements created by the current user.
+        """
+        params = f"?limit={limit}&offset={offset}"
+        return await self.client.make_request(
+            "GET", f"/announcements/my{params}", token=token
         )

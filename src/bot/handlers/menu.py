@@ -1,53 +1,62 @@
 """src/bot/handlers/menu.py."""
 
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.filters import Command
-from aiogram.utils.i18n import gettext as _
-
+from aiogram.fsm.context import FSMContext
+from aiogram.utils.i18n import gettext as _, lazy_gettext as __
 from src.bot.callbacks import MenuCallback
-from src.bot.utils.api import execute_with_refresh
+from src.bot.keyboards.inline import (
+    get_start_keyboard,
+    get_profile_keyboard,
+    get_main_menu_keyboard,
+)
+from src.bot.keyboards.reply import get_back_to_menu_keyboard
+from src.bot.states import ProfileSG
+from src.bot.utils import execute_with_refresh
 from src.database import BotUser
 from src.infrastructure.api import SwipeApiClient, SwipeAPIError
 
 router = Router()
 
 
-@router.callback_query(MenuCallback.filter(F.action == "profile"))
-async def show_profile_callback(query: CallbackQuery, user: BotUser):
+async def _show_profile_logic(message: Message, user: BotUser, state: FSMContext):
     """
-    Handles 'My Profile' button click.
+    Reusable logic for fetching and showing profile with navigation.
     """
-    await _show_profile_logic(query.message, user)
-    await query.answer()
+    if not user or not user.api_access_token:
+        await message.answer(
+            _("You are not logged in. Please login first."),
+            reply_markup=get_start_keyboard(),
+        )
+        return
 
-
-@router.message(Command("profile"))
-async def show_profile_command(message: Message, user: BotUser):
-    """
-    Handles /profile command.
-    """
-    await _show_profile_logic(message, user)
-
-
-async def _show_profile_logic(message: Message, user: BotUser):
-    """
-    Reusable logic for fetching and showing profile.
-    """
     api = SwipeApiClient()
+
     try:
         profile_data = await execute_with_refresh(user, api.users.get_my_profile)
+
+        await state.set_state(ProfileSG.Viewing)
+
+        await message.answer(
+            text=_("**My Profile Mode**"), reply_markup=get_back_to_menu_keyboard()
+        )
+
         await message.answer(
             text=_(
-                "**Your Profile:**\n\n"
-                "Name: {first} {last}\nEmail: {email}\nPhone: {phone}"
+                "**Personal Info:**\n\n"
+                "Name: {first} {last}\n"
+                "Email: {email}\n"
+                "Phone: {phone}"
             ).format(
                 first=profile_data["first_name"],
                 last=profile_data["last_name"],
                 email=profile_data["email"],
                 phone=profile_data["phone"],
-            )
+            ),
+            reply_markup=get_profile_keyboard(),
         )
+
     except SwipeAPIError as e:
         if e.status_code == 401:
             await message.answer(_("Your session has expired. Please log in again."))
@@ -57,10 +66,35 @@ async def _show_profile_logic(message: Message, user: BotUser):
             )
 
 
-@router.callback_query(MenuCallback.filter(F.action == "listings"))
-async def show_listings(query: CallbackQuery):
+@router.callback_query(MenuCallback.filter(F.action == "profile"))
+async def show_profile_callback(query: CallbackQuery, user: BotUser, state: FSMContext):
     """
-    Handles 'Listings' button click.
+    Handles 'My Profile' button click from Main Menu.
     """
+    await query.message.delete()
+    await _show_profile_logic(query.message, user, state)
     await query.answer()
-    await query.message.answer(_("Listings feature is under construction!"))
+
+
+@router.message(Command("profile"))
+async def show_profile_command(message: Message, state: FSMContext):
+    """
+    Handles /profile command.
+    """
+    user = await BotUser.find_one(BotUser.telegram_id == message.from_user.id)
+    await _show_profile_logic(message, user, state)
+
+
+@router.message(ProfileSG.Viewing, F.text == __("Back to Menu"))
+async def back_from_profile(message: Message, state: FSMContext):
+    """
+    Returns from Profile to Main Menu.
+    """
+    await state.clear()
+
+    msg = await message.answer("...", reply_markup=ReplyKeyboardRemove())
+    await msg.delete()
+
+    await message.answer(
+        text=_("Select an action:"), reply_markup=get_main_menu_keyboard()
+    )

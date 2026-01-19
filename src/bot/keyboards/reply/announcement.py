@@ -1,4 +1,4 @@
-"""src/bot/keyboards/reply/announcement.py."""
+"""src/bot/keyboards/reply/create_announcement.py."""
 
 from aiogram.types import ReplyKeyboardMarkup
 from aiogram.utils.keyboard import ReplyKeyboardBuilder

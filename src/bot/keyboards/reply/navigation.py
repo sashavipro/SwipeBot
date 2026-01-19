@@ -23,3 +23,13 @@ def get_back_keyboard() -> ReplyKeyboardMarkup:
     builder.button(text=_("Cancel"))
     builder.adjust(1, 1)
     return builder.as_markup(resize_keyboard=True)
+
+
+def get_back_to_menu_keyboard() -> ReplyKeyboardMarkup:
+    """
+    Creates a reply keyboard with a single 'Back to Menu' button.
+    """
+    builder = ReplyKeyboardBuilder()
+    builder.button(text=_("Back to Menu"))
+    builder.adjust(1)
+    return builder.as_markup(resize_keyboard=True)

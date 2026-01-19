@@ -13,6 +13,7 @@ from src.bot.handlers import main_router
 from src.bot.middlewares import LanguageMiddleware
 from src.config import settings
 from src.database import BotUser, get_redis_client
+from src.bot.ui_commands import set_ui_commands
 
 
 async def on_startup():
@@ -56,6 +57,8 @@ async def main():
     dp.include_router(main_router)
 
     dp.startup.register(on_startup)
+
+    await set_ui_commands(bot)
 
     await bot.delete_webhook(drop_pending_updates=True)
     try:

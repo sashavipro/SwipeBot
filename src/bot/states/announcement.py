@@ -1,4 +1,4 @@
-"""src/bot/states/announcement.py."""
+"""src/bot/states/create_announcement.py."""
 
 from aiogram.fsm.state import State, StatesGroup
 

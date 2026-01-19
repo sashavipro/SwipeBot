@@ -1,7 +1,7 @@
 """src/bot/handlers/common.py."""
 
 from aiogram import Router, F
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.i18n import gettext as _, lazy_gettext as __
@@ -111,4 +111,19 @@ async def logout_user(query: CallbackQuery, state: FSMContext):
 
     await query.message.edit_text(
         text=_("You have successfully logged out."), reply_markup=get_start_keyboard()
+    )
+
+
+@router.message(Command("help"))
+async def cmd_help(message: Message):
+    """
+    Handles the /help command.
+    """
+    await message.answer(
+        text=_(
+            "**Swipe Bot Help**\n\n"
+            "/start - Main Menu\n"
+            "/profile - My Profile\n\n"
+            "If you found a bug, please contact support."
+        )
     )
