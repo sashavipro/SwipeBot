@@ -7,10 +7,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip install "poetry==$POETRY_VERSION" \
+RUN pip install "poetry==$POETRY_VERSION" \
     && poetry config virtualenvs.create false
 
 COPY pyproject.toml poetry.lock ./
