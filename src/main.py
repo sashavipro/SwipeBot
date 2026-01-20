@@ -36,11 +36,13 @@ async def main():
     """
     logging.basicConfig(
         level=settings.LOG_LEVEL,
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+        format="%(asctime)s - [%(levelname)s] - %(name)s - (%(filename)s)"
+        ".%(funcName)s(%(lineno)d) - %(message)s",
     )
     logger = logging.getLogger(__name__)
     logger.info("Starting Swipe Bot...")
 
+    logger.info("Initializing Redis storage...")
     redis = get_redis_client()
     storage = RedisStorage(redis=redis)
 
@@ -49,28 +51,35 @@ async def main():
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
 
+    logger.info("Configuring i18n...")
     i18n = I18n(path="src/locales", default_locale="en", domain="messages")
     dp = Dispatcher(storage=storage)
 
+    logger.info("Registering middlewares...")
     dp.update.outer_middleware(LanguageMiddleware(i18n))
 
+    logger.info("Registering routers...")
     dp.include_router(main_router)
 
     dp.startup.register(on_startup)
 
+    logger.info("Setting up UI commands...")
     await set_ui_commands(bot)
 
     await bot.delete_webhook(drop_pending_updates=True)
     try:
+        logger.info("Bot started polling.")
         await dp.start_polling(bot)
     finally:
+        logger.info("Shutting down bot...")
         await bot.session.close()
         await redis.aclose()
+        logger.info("Bot stopped.")
 
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
-        logging.info("Bot stopped!")
+        logging.info("Bot execution interrupted.")
         raise

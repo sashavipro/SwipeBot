@@ -1,10 +1,13 @@
 """src/bot/middlewares/i18n.py."""
 
+import logging
 from typing import Any, Dict, Awaitable, Callable
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject, User
 from aiogram.utils.i18n import I18n
 from src.database import BotUser
+
+logger = logging.getLogger(__name__)
 
 
 class LanguageMiddleware(BaseMiddleware):
@@ -28,6 +31,7 @@ class LanguageMiddleware(BaseMiddleware):
     ) -> Any:
         """
         Processes the incoming update.
+        Determines locale based on DB -> Telegram -> Default priority.
         """
         tg_user: User | None = data.get("event_from_user")
         user: BotUser | None = data.get("user")
@@ -44,6 +48,14 @@ class LanguageMiddleware(BaseMiddleware):
         elif tg_user and tg_user.language_code:
             if tg_user.language_code in ["en", "ru"]:
                 locale = tg_user.language_code
+
+        if tg_user:
+            logger.debug(
+                "Selected locale '%s' for user %s (DB found: %s)",
+                locale,
+                tg_user.id,
+                bool(user),
+            )
 
         data["i18n"] = self.i18n
 

@@ -1,5 +1,6 @@
 """src/bot/handlers/menu.py."""
 
+import logging
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.filters import Command
@@ -18,6 +19,7 @@ from src.database import BotUser
 from src.infrastructure.api import SwipeApiClient, SwipeAPIError
 
 router = Router()
+logger = logging.getLogger(__name__)
 
 
 async def _show_profile_logic(message: Message, user: BotUser, state: FSMContext):
@@ -25,6 +27,9 @@ async def _show_profile_logic(message: Message, user: BotUser, state: FSMContext
     Reusable logic for fetching and showing profile with navigation.
     """
     if not user or not user.api_access_token:
+        logger.warning(
+            "User %s attempted to view profile without login", message.from_user.id
+        )
         await message.answer(
             _("You are not logged in. Please login first."),
             reply_markup=get_start_keyboard(),
@@ -34,6 +39,7 @@ async def _show_profile_logic(message: Message, user: BotUser, state: FSMContext
     api = SwipeApiClient()
 
     try:
+        logger.info("Fetching profile for user %s", user.telegram_id)
         profile_data = await execute_with_refresh(user, api.users.get_my_profile)
 
         await state.set_state(ProfileSG.Viewing)
@@ -58,6 +64,7 @@ async def _show_profile_logic(message: Message, user: BotUser, state: FSMContext
         )
 
     except SwipeAPIError as e:
+        logger.error("Failed to fetch profile for user %s: %s", user.telegram_id, e)
         if e.status_code == 401:
             await message.answer(_("Your session has expired. Please log in again."))
         else:
@@ -90,6 +97,7 @@ async def back_from_profile(message: Message, state: FSMContext):
     """
     Returns from Profile to Main Menu.
     """
+    logger.info("User %s returning to main menu from profile", message.from_user.id)
     await state.clear()
 
     msg = await message.answer("...", reply_markup=ReplyKeyboardRemove())

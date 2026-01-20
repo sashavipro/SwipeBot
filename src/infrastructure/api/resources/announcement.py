@@ -1,6 +1,9 @@
 """src/infrastructure/api/resources/announcement.py."""
 
+import logging
 from typing import Dict, Any, List
+
+logger = logging.getLogger(__name__)
 
 
 class AnnouncementsResource:
@@ -17,6 +20,7 @@ class AnnouncementsResource:
         """
         Fetches paginated announcements.
         """
+        logger.debug("Fetching announcements: limit=%s, offset=%s", limit, offset)
         params = f"?limit={limit}&offset={offset}"
         return await self.client.make_request(
             "GET", f"/announcements/{params}", token=token
@@ -28,6 +32,7 @@ class AnnouncementsResource:
         """
         Creates a new announcement.
         """
+        logger.info("Creating new announcement")
         return await self.client.make_request(
             "POST", "/announcements/", token=token, json=data
         )
@@ -38,6 +43,9 @@ class AnnouncementsResource:
         """
         Fetches announcements created by the current user.
         """
+        logger.debug(
+            "Fetching user's announcements: limit=%s, offset=%s", limit, offset
+        )
         params = f"?limit={limit}&offset={offset}"
         return await self.client.make_request(
             "GET", f"/announcements/my{params}", token=token

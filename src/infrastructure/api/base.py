@@ -46,6 +46,8 @@ class BaseAPIClient:
 
         url = f"{self.base_url}{endpoint}"
 
+        logger.debug("API Request: %s %s", method, url)
+
         async with httpx.AsyncClient(timeout=self.timeout, verify=False) as client:
             try:
                 response = await client.request(
@@ -55,6 +57,13 @@ class BaseAPIClient:
                     json=json,
                     data=data,
                     files=files,
+                )
+
+                logger.debug(
+                    "API Response: %s %s -> Status: %s",
+                    method,
+                    url,
+                    response.status_code,
                 )
 
                 if response.is_error:

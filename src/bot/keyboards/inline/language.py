@@ -1,10 +1,13 @@
 """src/bot/keyboards/inline/language.py."""
 
+import logging
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.utils.i18n import gettext as _
 from src.bot.callbacks import LanguageCallback
 from src.bot.callbacks import MenuCallback
+
+logger = logging.getLogger(__name__)
 
 
 def get_language_keyboard() -> InlineKeyboardMarkup:
@@ -12,6 +15,7 @@ def get_language_keyboard() -> InlineKeyboardMarkup:
     Creates an inline keyboard for interface language selection.
     Includes options for English and Russian, plus a navigation back button.
     """
+    logger.debug("Generating language selection keyboard")
     builder = InlineKeyboardBuilder()
     builder.button(text="English", callback_data=LanguageCallback(code="en"))
     builder.button(text="Русский", callback_data=LanguageCallback(code="ru"))

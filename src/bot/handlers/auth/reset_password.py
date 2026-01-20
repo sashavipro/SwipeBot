@@ -1,5 +1,6 @@
 """src/bot/handlers/auth/reset_password.py."""
 
+import logging
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -12,6 +13,7 @@ from src.bot.utils import handle_cancel, remove_reply_keyboard, cleanup_last_ste
 from src.infrastructure.api import SwipeApiClient, SwipeAPIError
 
 router = Router()
+logger = logging.getLogger(__name__)
 
 
 @router.message(Command("reset_password"))
@@ -19,6 +21,7 @@ async def start_reset_password(message: Message, state: FSMContext):
     """
     Starts the password reset flow.
     """
+    logger.info("User %s started password reset", message.from_user.id)
     await state.clear()
 
     if message.text.startswith("/"):
@@ -57,12 +60,17 @@ async def process_reset_email(message: Message, state: FSMContext):
             text=_("Code sent. **Enter the code:**"), reply_markup=get_cancel_keyboard()
         )
         await state.update_data(last_bot_msg_id=msg.message_id)
+        logger.info("Reset code sent to email for user %s", message.from_user.id)
 
     except SwipeAPIError as e:
+        logger.error(
+            "Failed to send reset code for user %s: %s", message.from_user.id, e
+        )
         msg = await message.answer(_("Error: {error}").format(error=e.message))
         await state.update_data(last_bot_msg_id=msg.message_id)
 
 
+# pylint: disable=duplicate-code
 @router.message(ResetPasswordSG.InputToken)
 async def process_reset_token(message: Message, state: FSMContext):
     """
@@ -105,8 +113,12 @@ async def process_new_password(message: Message, state: FSMContext):
             text=_("Password updated! Login now."), reply_markup=get_start_keyboard()
         )
         await state.clear()
+        logger.info("User %s successfully reset password", message.from_user.id)
 
     except SwipeAPIError as e:
+        logger.error(
+            "Failed to reset password for user %s: %s", message.from_user.id, e
+        )
         msg = await message.answer(
             text=_("Error: {error}").format(error=e.message),
             reply_markup=get_cancel_keyboard(),

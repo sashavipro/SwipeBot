@@ -1,5 +1,7 @@
 """src/bot/handlers/announcement/create_announcement.py."""
 
+import logging
+
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
@@ -24,6 +26,7 @@ from src.database import BotUser
 from src.infrastructure.api import SwipeApiClient, SwipeAPIError
 
 router = Router()
+logger = logging.getLogger(__name__)
 
 
 @router.callback_query(MenuCallback.filter(F.action == "create_listing"))
@@ -32,6 +35,7 @@ async def start_create_listing(query: CallbackQuery, state: FSMContext):
     Starts the announcement creation flow.
     Step 1: Ask for Address.
     """
+    logger.info("User %s started creating listing", query.from_user.id)
     await state.set_state(CreateAnnouncementSG.InputAddress)
     await state.set_data({"images": []})
 
@@ -235,8 +239,10 @@ async def input_image(message: Message, state: FSMContext, bot: Bot):
         images.append(base64_img)
 
         await state.update_data(images=images)
+        logger.info("Image added to listing draft for user %s", message.from_user.id)
 
-    except Exception:  # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        logger.error("Failed to process image for user %s: %s", message.from_user.id, e)
         await message.answer(_("Failed to process image."))
 
 
@@ -268,11 +274,14 @@ async def finish_creation(message: Message, state: FSMContext):
     user = await BotUser.find_one(BotUser.telegram_id == message.from_user.id)
     api = SwipeApiClient()
 
+    await cleanup_last_step(state, message)
+
     wait_msg = await message.answer(
         _("Creating listing..."), reply_markup=ReplyKeyboardRemove()
     )
 
     try:
+        logger.info("Submitting new listing for user %s", user.telegram_id)
         await execute_with_refresh(
             user, api.announcements.create_announcement, data=payload
         )
@@ -283,8 +292,10 @@ async def finish_creation(message: Message, state: FSMContext):
             reply_markup=get_main_menu_keyboard(),
         )
         await state.clear()
+        logger.info("Listing created successfully for user %s", user.telegram_id)
 
     except SwipeAPIError as e:
+        logger.error("Failed to create listing for user %s: %s", user.telegram_id, e)
         await wait_msg.delete()
         await message.answer(
             _("Failed to create listing: {error}").format(error=e.message),

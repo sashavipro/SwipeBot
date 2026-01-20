@@ -1,12 +1,13 @@
 """src/bot/handlers/auth/registration.py."""
 
 import re
+import logging
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.utils.i18n import gettext as _, lazy_gettext as __
 
-from src.bot.callbacks.menu import MenuCallback
+from src.bot.callbacks import MenuCallback
 from src.bot.keyboards.inline import get_start_keyboard, get_main_menu_keyboard
 from src.bot.keyboards.reply import (
     get_contact_keyboard,
@@ -15,10 +16,11 @@ from src.bot.keyboards.reply import (
 )
 from src.bot.states import RegistrationSG
 from src.bot.utils import handle_cancel, remove_reply_keyboard, cleanup_last_step
-from src.database.models import BotUser
+from src.database import BotUser
 from src.infrastructure.api import SwipeApiClient, SwipeAPIError
 
 router = Router()
+logger = logging.getLogger(__name__)
 
 
 @router.callback_query(MenuCallback.filter(F.action == "registration"))
@@ -26,6 +28,7 @@ async def start_reg(query: CallbackQuery, state: FSMContext):
     """
     Starts the registration process.
     """
+    logger.info("User %s started registration", query.from_user.id)
     await state.set_state(RegistrationSG.InputFirstName)
     await query.message.delete()
 
@@ -45,6 +48,9 @@ async def input_first_name(message: Message, state: FSMContext):
         return
 
     if len(message.text) < 2:
+        logger.debug(
+            "User %s entered invalid first name: %s", message.from_user.id, message.text
+        )
         msg = await message.answer(_("Too short. Please enter real First Name:"))
         await state.update_data(last_bot_msg_id=msg.message_id)
         return
@@ -66,6 +72,9 @@ async def back_to_start(message: Message, state: FSMContext):
     """
     Returns to the main menu.
     """
+    logger.info(
+        "User %s went back to start menu from registration", message.from_user.id
+    )
     await state.clear()
     await message.answer(_("Registration canceled."), reply_markup=get_start_keyboard())
 
@@ -114,6 +123,7 @@ async def input_email(message: Message, state: FSMContext):
 
     email = message.text.strip()
     if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        logger.debug("User %s entered invalid email: %s", message.from_user.id, email)
         msg = await message.answer(_("Invalid email format. Try again:"))
         await state.update_data(last_bot_msg_id=msg.message_id)
         return
@@ -161,6 +171,9 @@ async def input_phone(message: Message, state: FSMContext):
     else:
         phone = message.text
         if not re.match(r"^\+?\d{7,15}$", phone):
+            logger.debug(
+                "User %s entered invalid phone: %s", message.from_user.id, phone
+            )
             await message.answer(_("Invalid phone format. Please use +123456789."))
             return
 
@@ -206,6 +219,7 @@ async def input_password(message: Message, state: FSMContext):
         return
 
     if len(message.text) < 6:
+        logger.debug("User %s entered short password", message.from_user.id)
         await message.answer(_("Password must be at least 6 characters."))
         return
 
@@ -220,6 +234,7 @@ async def input_password(message: Message, state: FSMContext):
     )
 
     try:
+        logger.info("Submitting registration for user %s", message.from_user.id)
         await api.auth.register(user_data)
 
         await wait_msg.delete()
@@ -236,6 +251,7 @@ async def input_password(message: Message, state: FSMContext):
         await state.update_data(last_bot_msg_id=msg.message_id)
 
     except SwipeAPIError as e:
+        logger.error("Registration failed for user %s: %s", message.from_user.id, e)
         await wait_msg.delete()
 
         if e.status_code == 409:
@@ -267,6 +283,7 @@ async def input_code(message: Message, state: FSMContext):
     api = SwipeApiClient()
 
     try:
+        logger.info("Verifying code for user %s", message.from_user.id)
         await api.auth.verify_registration(email=data["email"], code=code)
         login_resp = await api.auth.login(
             email=data["email"], password=data["password"]
@@ -298,8 +315,14 @@ async def input_code(message: Message, state: FSMContext):
         )
 
         await state.clear()
+        logger.info(
+            "User %s successfully registered and logged in", message.from_user.id
+        )
 
     except SwipeAPIError as e:
+        logger.warning(
+            "Code verification failed for user %s: %s", message.from_user.id, e
+        )
         if e.status_code == 409:
             await state.clear()
             await message.answer(

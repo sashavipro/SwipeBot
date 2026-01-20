@@ -1,5 +1,6 @@
 """src/bot/handlers/common.py."""
 
+import logging
 from aiogram import Router, F
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
@@ -15,6 +16,7 @@ from src.bot.utils import handle_cancel
 from src.database import BotUser
 
 router = Router()
+logger = logging.getLogger(__name__)
 
 
 @router.message(CommandStart())
@@ -25,6 +27,7 @@ async def cmd_start(message: Message):
     """
     user = await BotUser.find_one(BotUser.telegram_id == message.from_user.id)
     if not user:
+        logger.info("New user started bot: %s", message.from_user.id)
         user = BotUser(
             telegram_id=message.from_user.id,
             full_name=message.from_user.full_name,
@@ -34,6 +37,7 @@ async def cmd_start(message: Message):
         await user.create()
 
     if user.api_access_token:
+        logger.info("User %s is logged in, showing main menu", user.telegram_id)
         await message.answer(
             text=_("Welcome back, {name}! Select an action:").format(
                 name=user.full_name
@@ -41,6 +45,7 @@ async def cmd_start(message: Message):
             reply_markup=get_main_menu_keyboard(),
         )
     else:
+        logger.info("User %s is not logged in, showing start menu", user.telegram_id)
         await message.answer(
             text=_("Welcome to Swipe! Select:"),
             reply_markup=get_start_keyboard(),
@@ -76,6 +81,9 @@ async def set_language(query: CallbackQuery, callback_data: LanguageCallback, i1
     if user:
         user.language_code = callback_data.code
         await user.save()
+        logger.info(
+            "User %s changed language to %s", user.telegram_id, callback_data.code
+        )
 
     await query.answer(_("Language changed!"))
     i18n.ctx_locale.set(callback_data.code)
@@ -103,6 +111,7 @@ async def logout_user(query: CallbackQuery, state: FSMContext):
     """
     user = await BotUser.find_one(BotUser.telegram_id == query.from_user.id)
     if user:
+        logger.info("User %s logged out", user.telegram_id)
         user.api_access_token = None
         user.api_refresh_token = None
         await user.save()

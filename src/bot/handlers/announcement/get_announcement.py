@@ -128,8 +128,15 @@ async def _fetch_listings(
             if mode == "my"
             else api.announcements.get_announcements
         )
+        logger.info(
+            "Fetching listings for user %s (mode=%s, offset=%s)",
+            user.telegram_id,
+            mode,
+            offset,
+        )
         return await execute_with_refresh(user, fetch_func, limit=2, offset=offset)
-    except SwipeAPIError:
+    except SwipeAPIError as e:
+        logger.error("Failed to fetch listings for user %s: %s", user.telegram_id, e)
         return None
 
 
@@ -149,6 +156,7 @@ async def show_listing_page(
         return
 
     if not listings:
+        logger.info("No listings found for user %s (mode=%s)", user.telegram_id, mode)
         if offset > 0:
             await message.answer(_("No more listings."))
             await state.update_data(offset=offset - 1)
@@ -181,6 +189,7 @@ async def start_listings(query: CallbackQuery, state: FSMContext):
     """
     Enters listing browsing mode (All listings).
     """
+    logger.info("User %s entered marketplace mode", query.from_user.id)
     user = await BotUser.find_one(BotUser.telegram_id == query.from_user.id)
 
     await state.set_state(ListingsSG.Browsing)
@@ -201,6 +210,7 @@ async def start_my_listings(query: CallbackQuery, state: FSMContext):
     """
     Enters listing browsing mode (My Listings).
     """
+    logger.info("User %s entered my listings mode", query.from_user.id)
     user = await BotUser.find_one(BotUser.telegram_id == query.from_user.id)
 
     await state.set_state(ListingsSG.Browsing)
@@ -221,6 +231,7 @@ async def next_page(query: CallbackQuery, state: FSMContext):
     """
     Handles the 'Next' navigation button.
     """
+    logger.info("User %s requested next listing", query.from_user.id)
     user = await BotUser.find_one(BotUser.telegram_id == query.from_user.id)
     data = await state.get_data()
     new_offset = data.get("offset", 0) + 1
@@ -234,6 +245,7 @@ async def prev_page(query: CallbackQuery, state: FSMContext):
     """
     Handles the 'Previous' navigation button.
     """
+    logger.info("User %s requested previous listing", query.from_user.id)
     user = await BotUser.find_one(BotUser.telegram_id == query.from_user.id)
     data = await state.get_data()
     new_offset = max(0, data.get("offset", 0) - 1)
@@ -254,11 +266,16 @@ async def show_geolocation(query: CallbackQuery, state: FSMContext):
         try:
             lat = float(item["latitude"])
             lon = float(item["longitude"])
+            logger.info(
+                "Showing geolocation for listing to user %s", query.from_user.id
+            )
             await query.message.answer_location(latitude=lat, longitude=lon)
             await query.answer()
         except ValueError:
+            logger.error("Invalid coordinates for listing: %s", item)
             await query.answer(_("Invalid coordinates data."), show_alert=True)
     else:
+        logger.info("No coordinates for listing ID %s", item.get("id"))
         await query.answer(_("Geolocation not set for this listing."), show_alert=True)
 
 
@@ -267,6 +284,7 @@ async def exit_listings(message: Message, state: FSMContext):
     """
     Exits the browsing mode, clears messages, returns to Main Menu.
     """
+    logger.info("User %s exiting listings mode", message.from_user.id)
     try:
         await message.delete()
     except Exception:  # pylint: disable=broad-exception-caught

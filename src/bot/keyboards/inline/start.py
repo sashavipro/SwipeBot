@@ -1,9 +1,12 @@
 """src/bot/keyboards/inline/start.py."""
 
+import logging
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.utils.i18n import gettext as _
 from src.bot.callbacks import MenuCallback
+
+logger = logging.getLogger(__name__)
 
 
 def get_start_keyboard() -> InlineKeyboardMarkup:
@@ -11,6 +14,7 @@ def get_start_keyboard() -> InlineKeyboardMarkup:
     Creates the main menu inline keyboard.
     Includes options for Login, Registration, and Language selection.
     """
+    logger.debug("Generating start menu keyboard")
     builder = InlineKeyboardBuilder()
     builder.button(text=_("Login"), callback_data=MenuCallback(action="login"))
     builder.button(
