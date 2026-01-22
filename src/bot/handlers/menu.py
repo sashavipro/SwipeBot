@@ -14,7 +14,6 @@ from src.bot.keyboards.inline import (
 )
 from src.bot.keyboards.reply import get_back_to_menu_keyboard
 from src.bot.states import ProfileSG
-from src.bot.utils import execute_with_refresh
 from src.database import BotUser
 from src.infrastructure.api import SwipeApiClient, SwipeAPIError
 
@@ -36,11 +35,11 @@ async def _show_profile_logic(message: Message, user: BotUser, state: FSMContext
         )
         return
 
-    api = SwipeApiClient()
+    api = SwipeApiClient(user=user)
 
     try:
         logger.info("Fetching profile for user %s", user.telegram_id)
-        profile_data = await execute_with_refresh(user, api.users.get_my_profile)
+        profile_data = await api.users.get_my_profile()
 
         await state.set_state(ProfileSG.Viewing)
 

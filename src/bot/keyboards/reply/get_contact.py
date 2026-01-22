@@ -11,11 +11,12 @@ logger = logging.getLogger(__name__)
 def get_contact_keyboard() -> ReplyKeyboardMarkup:
     """
     Creates a reply keyboard with a button to share the user's contact information.
-    Also includes a cancellation button.
+    Also includes 'Back' and 'Cancel Registration' buttons.
     """
     logger.debug("Generating contact request keyboard")
     builder = ReplyKeyboardBuilder()
     builder.button(text=_("Share my contact"), request_contact=True)
+    builder.button(text=_("Back"))
     builder.button(text=_("Cancel Registration"))
-    builder.adjust(1)
+    builder.adjust(1, 2)
     return builder.as_markup(resize_keyboard=True, one_time_keyboard=True)

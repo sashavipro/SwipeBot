@@ -2,22 +2,23 @@
 
 import logging
 import html
-from typing import Dict, Any, List, NamedTuple, Optional
+import asyncio
+from typing import Dict, Any, List, Optional, NamedTuple
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InputMediaPhoto, ReplyKeyboardRemove
 from aiogram.utils.i18n import gettext as _, lazy_gettext as __
-
 from src.bot.callbacks import MenuCallback, ListingCallback
-from src.bot.keyboards.inline import get_listings_nav_keyboard, get_main_menu_keyboard
-from src.bot.keyboards.reply import get_back_to_menu_keyboard
+from src.bot.keyboards.inline import get_item_keyboard, get_main_menu_keyboard
+from src.bot.keyboards.reply import get_listings_reply_keyboard
 from src.bot.states import ListingsSG
 from src.database import BotUser
-from src.bot.utils import execute_with_refresh
 from src.infrastructure.api import SwipeApiClient, SwipeAPIError
 
 router = Router()
 logger = logging.getLogger(__name__)
+
+ITEMS_PER_PAGE = 2
 
 
 class ListingContext(NamedTuple):
@@ -31,21 +32,50 @@ class ListingContext(NamedTuple):
     current_item: Dict[str, Any]
 
 
-async def _cleanup_previous_messages(message: Message, data: Dict[str, Any]) -> None:
-    """Helper to delete previous listing messages."""
-    control_msg_id = data.get("control_msg_id")
-    if control_msg_id:
-        try:
-            await message.bot.delete_message(message.chat.id, control_msg_id)
-        except Exception:  # pylint: disable=broad-exception-caught
-            pass
+async def _cleanup_batch_messages(message: Message, state: FSMContext):
+    """
+    Deletes all messages from the previous page/batch, including the map.
+    """
+    data = await state.get_data()
+    msg_ids = data.get("batch_msg_ids", [])
 
-    album_msg_ids = data.get("album_msg_ids", [])
-    for msg_id in album_msg_ids:
+    for msg_id in msg_ids:
         try:
             await message.bot.delete_message(message.chat.id, msg_id)
         except Exception:  # pylint: disable=broad-exception-caught
             pass
+
+    geo_msg_id = data.get("geo_msg_id")
+    if geo_msg_id:
+        try:
+            await message.bot.delete_message(message.chat.id, geo_msg_id)
+        except Exception:  # pylint: disable=broad-exception-caught
+            pass
+
+    menu_msg_id = data.get("menu_msg_id")
+    if menu_msg_id:
+        try:
+            await message.bot.delete_message(message.chat.id, menu_msg_id)
+        except Exception:  # pylint: disable=broad-exception-caught
+            pass
+
+    await state.update_data(batch_msg_ids=[], geo_msg_id=None, menu_msg_id=None)
+
+
+def _prepare_media_group(images: List[Dict[str, Any]]) -> List[InputMediaPhoto]:
+    """
+    Prepares a list of InputMediaPhoto for sending an album.
+    Limits the number of images to 10 (Telegram API limit).
+    """
+    media_group = []
+    if images:
+        for img in images[:10]:
+            media_group.append(InputMediaPhoto(media=img["image_url"]))
+    else:
+        media_group.append(
+            InputMediaPhoto(media="https://via.placeholder.com/600x400?text=No+Photo")
+        )
+    return media_group
 
 
 def _prepare_announcement_text(item: Dict[str, Any], mode: str) -> str:
@@ -61,14 +91,13 @@ def _prepare_announcement_text(item: Dict[str, Any], mode: str) -> str:
     area = item.get("area", 0)
 
     owner = item.get("owner")
-    if owner and owner.get("phone"):
-        phone = html.escape(owner["phone"])
-    else:
-        phone = _("No contact info")
+    phone = (
+        html.escape(owner["phone"])
+        if owner and owner.get("phone")
+        else _("No contact info")
+    )
 
-    title_prefix = ""
-    if mode == "my":
-        title_prefix = _("<b>MY LISTING</b>\n")
+    title_prefix = _("<b>MY LISTING</b>\n") if mode == "my" else ""
 
     return (
         f"{title_prefix}"
@@ -77,20 +106,6 @@ def _prepare_announcement_text(item: Dict[str, Any], mode: str) -> str:
         f"{description}\n\n"
         f"{phone}"
     )
-
-
-def _prepare_media_group(images: List[Dict[str, Any]]) -> List[InputMediaPhoto]:
-    """Helper to prepare media group."""
-    media_group = []
-    if images:
-        for img in images:
-            url = img["image_url"]
-            media_group.append(InputMediaPhoto(media=url))
-    else:
-        media_group.append(
-            InputMediaPhoto(media="https://via.placeholder.com/600x400?text=No+Photo")
-        )
-    return media_group
 
 
 async def _send_listing_content(
@@ -103,48 +118,57 @@ async def _send_listing_content(
 
         control_msg = await message.answer(
             text=context.text,
-            reply_markup=get_listings_nav_keyboard(context.has_prev, context.has_next),
+            reply_markup=get_item_keyboard(context.current_item["id"]),
         )
+        new_album_ids.append(control_msg.message_id)
+
+        data = await state.get_data()
+        current_batch_ids = data.get("batch_msg_ids", [])
+        current_batch_ids.extend(new_album_ids)
+
+        batch_coords = data.get("batch_coords", {})
+        item = context.current_item
+        if item.get("latitude") and item.get("longitude"):
+            batch_coords[str(item["id"])] = {
+                "lat": item["latitude"],
+                "lon": item["longitude"],
+            }
 
         await state.update_data(
-            offset=context.offset,
-            control_msg_id=control_msg.message_id,
-            album_msg_ids=new_album_ids,
-            current_listing=context.current_item,
+            batch_msg_ids=current_batch_ids, batch_coords=batch_coords
         )
+        await asyncio.sleep(0.3)
+
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("Failed to send listing message: %s", e)
-        await message.answer(_("Error displaying listing. Please try again."))
 
 
 async def _fetch_listings(
     user: BotUser, mode: str, offset: int
 ) -> Optional[List[Dict[str, Any]]]:
     """Helper to fetch listings from API."""
-    api = SwipeApiClient()
+    api = SwipeApiClient(user=user)
     try:
         fetch_func = (
             api.announcements.get_my_announcements
             if mode == "my"
             else api.announcements.get_announcements
         )
-        logger.info(
-            "Fetching listings for user %s (mode=%s, offset=%s)",
-            user.telegram_id,
-            mode,
-            offset,
-        )
-        return await execute_with_refresh(user, fetch_func, limit=2, offset=offset)
-    except SwipeAPIError as e:
-        logger.error("Failed to fetch listings for user %s: %s", user.telegram_id, e)
+        listings = await fetch_func(limit=ITEMS_PER_PAGE + 1, offset=offset)
+
+        return listings
+
+    except SwipeAPIError:
         return None
 
 
-async def show_listing_page(
+# pylint: disable=too-many-locals, too-many-statements
+async def show_listings_batch(
     message: Message, state: FSMContext, user: BotUser, offset: int
 ):
     """
-    Fetches and displays one announcement at the given offset.
+    Fetches a batch of listings from the API and displays them sequentially.
+    Handles pagination via Reply Keyboards.
     """
     data = await state.get_data()
     mode = data.get("listing_mode", "all")
@@ -156,32 +180,53 @@ async def show_listing_page(
         return
 
     if not listings:
-        logger.info("No listings found for user %s (mode=%s)", user.telegram_id, mode)
         if offset > 0:
             await message.answer(_("No more listings."))
-            await state.update_data(offset=offset - 1)
         else:
-            msg_text = (
+            msg = (
                 _("You haven't created any listings yet.")
                 if mode == "my"
                 else _("No listings found.")
             )
-            await message.answer(msg_text)
+            await message.answer(msg)
         return
 
-    current_item = listings[0]
-    await _cleanup_previous_messages(message, data)
+    await _cleanup_batch_messages(message, state)
 
-    ctx = ListingContext(
-        text=_prepare_announcement_text(current_item, mode),
-        media_group=_prepare_media_group(current_item.get("images", [])),
-        has_prev=offset > 0,
-        has_next=len(listings) > 1,
-        offset=offset,
-        current_item=current_item,
+    has_next = len(listings) > ITEMS_PER_PAGE
+    has_prev = offset > 0
+
+    items_to_show = listings[:ITEMS_PER_PAGE]
+
+    await state.update_data(batch_msg_ids=[], batch_coords={})
+
+    for item in items_to_show:
+        text = _prepare_announcement_text(item, mode)
+        media_group = _prepare_media_group(item.get("images", []))
+
+        ctx = ListingContext(
+            text=text,
+            media_group=media_group,
+            has_prev=False,
+            has_next=False,
+            offset=offset,
+            current_item=item,
+        )
+        await _send_listing_content(message, state, ctx)
+
+    page_num = (offset // ITEMS_PER_PAGE) + 1
+    nav_msg = await message.answer(
+        text=_("**Announcement Page {page}**").format(page=page_num),
+        reply_markup=get_listings_reply_keyboard(has_prev, has_next),
     )
 
-    await _send_listing_content(message, state, ctx)
+    data = await state.get_data()
+    batch_ids = data.get("batch_msg_ids", [])
+    batch_ids.append(nav_msg.message_id)
+    await state.update_data(batch_msg_ids=batch_ids, offset=offset)
+
+
+# --- ENTRY HANDLERS ---
 
 
 @router.callback_query(MenuCallback.filter(F.action == "listings"))
@@ -189,20 +234,12 @@ async def start_listings(query: CallbackQuery, state: FSMContext):
     """
     Enters listing browsing mode (All listings).
     """
-    logger.info("User %s entered marketplace mode", query.from_user.id)
     user = await BotUser.find_one(BotUser.telegram_id == query.from_user.id)
-
     await state.set_state(ListingsSG.Browsing)
     await state.update_data(offset=0, listing_mode="all")
-
     await query.message.delete()
 
-    menu_msg = await query.message.answer(
-        _("Announcement Mode"), reply_markup=get_back_to_menu_keyboard()
-    )
-    await state.update_data(menu_msg_id=menu_msg.message_id)
-
-    await show_listing_page(query.message, state, user, offset=0)
+    await show_listings_batch(query.message, state, user, offset=0)
 
 
 @router.callback_query(MenuCallback.filter(F.action == "my_listings"))
@@ -210,96 +247,96 @@ async def start_my_listings(query: CallbackQuery, state: FSMContext):
     """
     Enters listing browsing mode (My Listings).
     """
-    logger.info("User %s entered my listings mode", query.from_user.id)
     user = await BotUser.find_one(BotUser.telegram_id == query.from_user.id)
-
     await state.set_state(ListingsSG.Browsing)
     await state.update_data(offset=0, listing_mode="my")
-
     await query.message.delete()
 
-    menu_msg = await query.message.answer(
-        _("My Listings Mode"), reply_markup=get_back_to_menu_keyboard()
-    )
-    await state.update_data(menu_msg_id=menu_msg.message_id)
-
-    await show_listing_page(query.message, state, user, offset=0)
+    await show_listings_batch(query.message, state, user, offset=0)
 
 
-@router.callback_query(ListingCallback.filter(F.action == "next"))
-async def next_page(query: CallbackQuery, state: FSMContext):
+# --- PAGINATION HANDLERS (Reply Buttons) ---
+
+
+@router.message(ListingsSG.Browsing, F.text == "➡️")
+async def page_next_reply(message: Message, state: FSMContext):
     """
-    Handles the 'Next' navigation button.
+    Handles Next Page button.
     """
-    logger.info("User %s requested next listing", query.from_user.id)
-    user = await BotUser.find_one(BotUser.telegram_id == query.from_user.id)
+    user = await BotUser.find_one(BotUser.telegram_id == message.from_user.id)
     data = await state.get_data()
-    new_offset = data.get("offset", 0) + 1
+    new_offset = data.get("offset", 0) + ITEMS_PER_PAGE
 
-    await show_listing_page(query.message, state, user, new_offset)
-    await query.answer()
-
-
-@router.callback_query(ListingCallback.filter(F.action == "prev"))
-async def prev_page(query: CallbackQuery, state: FSMContext):
-    """
-    Handles the 'Previous' navigation button.
-    """
-    logger.info("User %s requested previous listing", query.from_user.id)
-    user = await BotUser.find_one(BotUser.telegram_id == query.from_user.id)
-    data = await state.get_data()
-    new_offset = max(0, data.get("offset", 0) - 1)
-
-    await show_listing_page(query.message, state, user, new_offset)
-    await query.answer()
-
-
-@router.callback_query(ListingCallback.filter(F.action == "geo"))
-async def show_geolocation(query: CallbackQuery, state: FSMContext):
-    """
-    Handles the 'Location' button.
-    """
-    data = await state.get_data()
-    item = data.get("current_listing")
-
-    if item and item.get("latitude") and item.get("longitude"):
-        try:
-            lat = float(item["latitude"])
-            lon = float(item["longitude"])
-            logger.info(
-                "Showing geolocation for listing to user %s", query.from_user.id
-            )
-            await query.message.answer_location(latitude=lat, longitude=lon)
-            await query.answer()
-        except ValueError:
-            logger.error("Invalid coordinates for listing: %s", item)
-            await query.answer(_("Invalid coordinates data."), show_alert=True)
-    else:
-        logger.info("No coordinates for listing ID %s", item.get("id"))
-        await query.answer(_("Geolocation not set for this listing."), show_alert=True)
-
-
-@router.message(ListingsSG.Browsing, F.text == __("Back to Menu"))
-async def exit_listings(message: Message, state: FSMContext):
-    """
-    Exits the browsing mode, clears messages, returns to Main Menu.
-    """
-    logger.info("User %s exiting listings mode", message.from_user.id)
     try:
         await message.delete()
     except Exception:  # pylint: disable=broad-exception-caught
         pass
 
+    await show_listings_batch(message, state, user, new_offset)
+
+
+@router.message(ListingsSG.Browsing, F.text == "⬅️")
+async def page_prev_reply(message: Message, state: FSMContext):
+    """
+    Handles Previous Page button.
+    """
+    user = await BotUser.find_one(BotUser.telegram_id == message.from_user.id)
     data = await state.get_data()
+    new_offset = max(0, data.get("offset", 0) - ITEMS_PER_PAGE)
 
-    await _cleanup_previous_messages(message, data)
+    try:
+        await message.delete()
+    except Exception:  # pylint: disable=broad-exception-caught
+        pass
 
-    menu_msg_id = data.get("menu_msg_id")
-    if menu_msg_id:
+    await show_listings_batch(message, state, user, new_offset)
+
+
+@router.callback_query(ListingCallback.filter(F.action == "geo"))
+async def show_geolocation(
+    query: CallbackQuery, callback_data: ListingCallback, state: FSMContext
+):
+    """
+    Shows geolocation for a specific item in the batch using stored coordinates.
+    """
+    data = await state.get_data()
+    coords_map = data.get("batch_coords", {})
+
+    item_coords = coords_map.get(str(callback_data.id))
+    if not item_coords:
+        item_coords = coords_map.get(callback_data.id)
+
+    prev_geo_id = data.get("geo_msg_id")
+    if prev_geo_id:
         try:
-            await message.bot.delete_message(message.chat.id, menu_msg_id)
+            await query.message.bot.delete_message(query.message.chat.id, prev_geo_id)
         except Exception:  # pylint: disable=broad-exception-caught
             pass
+
+    if item_coords:
+        try:
+            lat = float(item_coords["lat"])
+            lon = float(item_coords["lon"])
+            geo_msg = await query.message.answer_location(latitude=lat, longitude=lon)
+            await state.update_data(geo_msg_id=geo_msg.message_id)
+            await query.answer()
+        except ValueError:
+            await query.answer(_("Invalid coordinates."), show_alert=True)
+    else:
+        await query.answer(_("Location not found for this item."), show_alert=True)
+
+
+@router.message(ListingsSG.Browsing, F.text == __("Back to Menu"))
+async def exit_listings(message: Message, state: FSMContext):
+    """
+    Exits the browsing mode, clears all messages, returns to Main Menu.
+    """
+    try:
+        await message.delete()
+    except Exception:  # pylint: disable=broad-exception-caught
+        pass
+
+    await _cleanup_batch_messages(message, state)
 
     await state.clear()
 

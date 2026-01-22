@@ -1,30 +1,19 @@
 """src/bot/keyboards/inline/announcement.py."""
 
-import logging
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.utils.i18n import gettext as _
 from src.bot.callbacks import ListingCallback
 
-logger = logging.getLogger(__name__)
 
-
-def get_listings_nav_keyboard(has_prev: bool, has_next: bool) -> InlineKeyboardMarkup:
+def get_item_keyboard(announcement_id: int) -> InlineKeyboardMarkup:
     """
-    Creates navigation buttons (Prev, Geo, Next).
+    Keyboard attached to each listing item (Location button).
     """
-    logger.debug(
-        "Generating listings nav keyboard: prev=%s, next=%s", has_prev, has_next
-    )
     builder = InlineKeyboardBuilder()
+    builder.button(
+        text=_("Location"),
+        callback_data=ListingCallback(action="geo", id=announcement_id),
+    )
 
-    if has_prev:
-        builder.button(text="⬅️", callback_data=ListingCallback(action="prev"))
-
-    builder.button(text=_("Location"), callback_data=ListingCallback(action="geo"))
-
-    if has_next:
-        builder.button(text="➡️", callback_data=ListingCallback(action="next"))
-
-    builder.adjust(3)
     return builder.as_markup()

@@ -1,9 +1,6 @@
 """src/infrastructure/api/resources/users.py."""
 
-import logging
 from typing import Dict, Any
-
-logger = logging.getLogger(__name__)
 
 
 # pylint: disable=too-few-public-methods
@@ -15,7 +12,7 @@ class UsersResource:
     def __init__(self, client):
         self.client = client
 
-    async def get_my_profile(self, token: str) -> Dict[str, Any]:
+    async def get_my_profile(self) -> Dict[str, Any]:
         """Retrieves current user profile."""
-        logger.debug("Fetching current user profile")
-        return await self.client.make_request("GET", "/users/me", token=token)
+        # Token is handled automatically by the client
+        return await self.client.make_request("GET", "/users/me")

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-19 11:28+0300\n"
+"POT-Creation-Date: 2026-01-22 10:28+0300\n"
 "PO-Revision-Date: 2026-01-14 13:46+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -19,45 +19,43 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: src/bot/handlers/common.py:38
-#, fuzzy, python-brace-format
+#: src/bot/handlers/common.py:42
+#, python-brace-format
 msgid "Welcome back, {name}! Select an action:"
 msgstr "Добро пожаловать в Swipe! Выберите действие:"
 
-#: src/bot/handlers/common.py:45
+#: src/bot/handlers/common.py:50
 msgid "Welcome to Swipe! Select:"
 msgstr "Добро пожаловать в Swipe! Выберите:"
 
-#: src/bot/handlers/common.py:56
+#: src/bot/handlers/common.py:61
 msgid "Select the interface language:"
 msgstr "Выберите язык интерфейса:"
 
-#: src/bot/handlers/common.py:66
+#: src/bot/handlers/common.py:72
 msgid "Welcome to Swipe! Select an action:"
 msgstr "Добро пожаловать в Swipe! Выберите действие:"
 
-#: src/bot/handlers/common.py:80
+#: src/bot/handlers/common.py:91
 msgid "Language changed!"
 msgstr "Язык изменился!"
 
-#: src/bot/handlers/common.py:88 src/bot/handlers/menu.py:99
-#, fuzzy
+#: src/bot/handlers/common.py:99 src/bot/handlers/menu.py:107
 msgid "Select an action:"
 msgstr "Добро пожаловать в Swipe! Выберите действие:"
 
-#: src/bot/handlers/common.py:91 src/bot/keyboards/reply/announcement.py:14
-#: src/bot/keyboards/reply/announcement.py:25
-#: src/bot/keyboards/reply/login.py:15 src/bot/keyboards/reply/navigation.py:13
-#: src/bot/keyboards/reply/navigation.py:23 src/bot/utils/ui.py:21
+#: src/bot/handlers/common.py:102 src/bot/keyboards/reply/announcement.py:18
+#: src/bot/keyboards/reply/announcement.py:30
+#: src/bot/keyboards/reply/login.py:19 src/bot/keyboards/reply/navigation.py:17
+#: src/bot/keyboards/reply/navigation.py:28 src/bot/utils/ui.py:27
 msgid "Cancel"
 msgstr "Отмена"
 
-#: src/bot/handlers/common.py:113
-#, fuzzy
+#: src/bot/handlers/common.py:125
 msgid "You have successfully logged out."
 msgstr "**Успешно вошли в систему!**"
 
-#: src/bot/handlers/common.py:124
+#: src/bot/handlers/common.py:137
 msgid ""
 "**Swipe Bot Help**\n"
 "\n"
@@ -73,16 +71,15 @@ msgstr ""
 "\n"
 "Если вы обнаружили ошибку, пожалуйста, обратитесь в службу поддержки."
 
-#: src/bot/handlers/menu.py:29
+#: src/bot/handlers/menu.py:33
 msgid "You are not logged in. Please login first."
 msgstr "Вы не вошли в систему. Пожалуйста, войдите в систему сначала."
 
-#: src/bot/handlers/menu.py:42
-#, fuzzy
+#: src/bot/handlers/menu.py:47
 msgid "**My Profile Mode**"
 msgstr "Мой профиль"
 
-#: src/bot/handlers/menu.py:47
+#: src/bot/handlers/menu.py:53
 #, python-brace-format
 msgid ""
 "**Personal Info:**\n"
@@ -97,20 +94,22 @@ msgstr ""
 "Электронная почта: {email}\n"
 "Телефон: {phone}"
 
-#: src/bot/handlers/menu.py:62
+#: src/bot/handlers/menu.py:69
 msgid "Your session has expired. Please log in again."
 msgstr "Ваша сессия истекла. Пожалуйста, войдите снова."
 
-#: src/bot/handlers/menu.py:65
-#, fuzzy, python-brace-format
+#: src/bot/handlers/menu.py:72
+#, python-brace-format
 msgid "An error occurred: {error}"
 msgstr "Ошибка: {error}"
 
-#: src/bot/handlers/menu.py:88
+#: src/bot/handlers/announcement/get_announcement.py:342
+#: src/bot/handlers/menu.py:95 src/bot/keyboards/reply/announcement.py:46
+#: src/bot/keyboards/reply/navigation.py:39
 msgid "Back to Menu"
 msgstr "Вернуться к меню"
 
-#: src/bot/handlers/announcement/create_announcement.py:42
+#: src/bot/handlers/announcement/create_announcement.py:44
 msgid ""
 "**Create New Listing**\n"
 "\n"
@@ -120,59 +119,59 @@ msgstr ""
 "\n"
 "Шаг 1/7: Введите **адрес** (например, Бейкер-стрит, 221Б):"
 
-#: src/bot/handlers/announcement/create_announcement.py:63
-#: src/bot/handlers/announcement/create_announcement.py:109
-#, fuzzy
+#: src/bot/handlers/announcement/create_announcement.py:65
+#: src/bot/handlers/announcement/create_announcement.py:112
 msgid "Step 2/7: Enter **Apartment Number**:"
 msgstr "Шаг 2/7: Введите **номер квартиры**:"
 
-
-#: src/bot/handlers/announcement/create_announcement.py:77
-#: src/bot/handlers/announcement/create_announcement.py:105
-#: src/bot/handlers/announcement/create_announcement.py:142
-#: src/bot/handlers/announcement/create_announcement.py:178
-#: src/bot/handlers/auth/login.py:63 src/bot/handlers/auth/login.py:97
-#: src/bot/handlers/auth/registration.py:64
-#: src/bot/handlers/auth/registration.py:93
-#: src/bot/handlers/auth/registration.py:136
-#: src/bot/handlers/auth/registration.py:182
-#: src/bot/handlers/auth/registration.py:204
-#: src/bot/keyboards/inline/language.py:18 src/bot/keyboards/reply/login.py:14
-#: src/bot/keyboards/reply/navigation.py:22
+#: src/bot/handlers/announcement/create_announcement.py:79
+#: src/bot/handlers/announcement/create_announcement.py:108
+#: src/bot/handlers/announcement/create_announcement.py:146
+#: src/bot/handlers/announcement/create_announcement.py:184
+#: src/bot/handlers/auth/login.py:67 src/bot/handlers/auth/login.py:103
+#: src/bot/handlers/auth/registration.py:40
+#: src/bot/handlers/auth/registration.py:48
+#: src/bot/handlers/auth/registration.py:59
+#: src/bot/handlers/auth/registration.py:70
+#: src/bot/handlers/auth/registration.py:144
+#: src/bot/handlers/auth/registration.py:168
+#: src/bot/keyboards/inline/language.py:22
+#: src/bot/keyboards/reply/get_contact.py:19
+#: src/bot/keyboards/reply/login.py:18 src/bot/keyboards/reply/navigation.py:27
 msgid "Back"
 msgstr "Назад"
 
-#: src/bot/handlers/announcement/create_announcement.py:81
+#: src/bot/handlers/announcement/create_announcement.py:83
 msgid "Step 1/7: Enter the **Address**:"
 msgstr "Шаг 1/7: Введите **адрес**:"
 
-#: src/bot/handlers/announcement/create_announcement.py:92
-#: src/bot/handlers/announcement/create_announcement.py:146
+#: src/bot/handlers/announcement/create_announcement.py:94
+#: src/bot/handlers/announcement/create_announcement.py:150
 msgid "Step 3/7: Enter **Price** ($):"
 msgstr "Шаг 3/7: Введите **Цена** ($):"
 
-#: src/bot/handlers/announcement/create_announcement.py:120
+#: src/bot/handlers/announcement/create_announcement.py:123
 msgid "Please enter a valid number for price."
 msgstr "Введите действительный номер для цены."
 
-#: src/bot/handlers/announcement/create_announcement.py:129
-#: src/bot/handlers/announcement/create_announcement.py:182
+#: src/bot/handlers/announcement/create_announcement.py:132
+#: src/bot/handlers/announcement/create_announcement.py:188
 msgid "Step 4/7: Enter **Area** (sq. m):"
 msgstr "Шаг 4/7: Введите **Площадь** (кв. м):"
 
-#: src/bot/handlers/announcement/create_announcement.py:156
+#: src/bot/handlers/announcement/create_announcement.py:161
 msgid "Please enter a valid number for area."
 msgstr "Введите действительный номер для данного региона."
 
-#: src/bot/handlers/announcement/create_announcement.py:165
+#: src/bot/handlers/announcement/create_announcement.py:170
 msgid "Step 5/7: Enter **Description**:"
 msgstr "Шаг 5/7: Введите **Описание**:"
 
-#: src/bot/handlers/announcement/create_announcement.py:193
+#: src/bot/handlers/announcement/create_announcement.py:199
 msgid "Step 6/7: Share **Location** using the button below:"
 msgstr "Шаг 6/7: Поделитесь **местоположением** с помощью кнопки ниже:"
 
-#: src/bot/handlers/announcement/create_announcement.py:215
+#: src/bot/handlers/announcement/create_announcement.py:221
 msgid ""
 "Step 7/7: Send **Photos** (one by one or album).\n"
 "\n"
@@ -182,122 +181,109 @@ msgstr ""
 "\n"
 "По завершении нажмите **Готово**."
 
-#: src/bot/handlers/announcement/create_announcement.py:240
+#: src/bot/handlers/announcement/create_announcement.py:248
 msgid "Failed to process image."
 msgstr "Не удалось обработать изображение."
 
-#: src/bot/handlers/announcement/create_announcement.py:243
-#: src/bot/keyboards/reply/announcement.py:24
+#: src/bot/handlers/announcement/create_announcement.py:251
+#: src/bot/keyboards/reply/announcement.py:29
 msgid "Done"
 msgstr "Готово"
 
-#: src/bot/handlers/announcement/create_announcement.py:252
+#: src/bot/handlers/announcement/create_announcement.py:260
 msgid "Please send at least one photo."
 msgstr "Пожалуйста, пришлите хотя бы одну фотографию."
 
-#: src/bot/handlers/announcement/create_announcement.py:272
-#, fuzzy
+#: src/bot/handlers/announcement/create_announcement.py:283
 msgid "Creating listing..."
 msgstr "Создать объявление"
 
-#: src/bot/handlers/announcement/create_announcement.py:282
+#: src/bot/handlers/announcement/create_announcement.py:294
 msgid "**Listing created successfully!**"
 msgstr "**Объявление создано успешно!**"
 
-#: src/bot/handlers/announcement/create_announcement.py:290
+#: src/bot/handlers/announcement/create_announcement.py:305
+msgid "Session expired. Please login again."
+msgstr "Ваша сессия истекла. Пожалуйста, войдите снова."
+
+#: src/bot/handlers/announcement/create_announcement.py:308
 #, python-brace-format
 msgid "Failed to create listing: {error}"
 msgstr "Не удалось создать объявление: {error}"
 
-#: src/bot/handlers/announcement/get_announcement.py:55
+#: src/bot/handlers/announcement/get_announcement.py:104
 msgid "No contact info"
 msgstr "Нет контактной информации"
 
-#: src/bot/handlers/announcement/get_announcement.py:59
+#: src/bot/handlers/announcement/get_announcement.py:107
 msgid "<b>MY LISTING</b>\n"
 msgstr "<b>МОЙ СПИСОК</b>\n"
 
-#: src/bot/handlers/announcement/get_announcement.py:111
-msgid "Error displaying listing. Please try again."
-msgstr "Ошибка при отображении списка. Повторите попытку."
-
-#: src/bot/handlers/announcement/get_announcement.py:136
-#, fuzzy, python-brace-format
-msgid "Error loading listings: {error}"
+#: src/bot/handlers/announcement/get_announcement.py:192
+#, python-brace-format
+msgid "Error loading listings."
 msgstr "Ошибка: {error}"
 
-#: src/bot/handlers/announcement/get_announcement.py:142
-#, fuzzy
+#: src/bot/handlers/announcement/get_announcement.py:197
 msgid "No more listings."
 msgstr "Создать объявление"
 
-#: src/bot/handlers/announcement/get_announcement.py:146
+#: src/bot/handlers/announcement/get_announcement.py:200
 msgid "You haven't created any listings yet."
 msgstr "Вы еще не создали ни одного объявления."
 
-#: src/bot/handlers/announcement/get_announcement.py:148
-#, fuzzy
+#: src/bot/handlers/announcement/get_announcement.py:202
 msgid "No listings found."
 msgstr "Список объявлений"
 
-#: src/bot/handlers/announcement/get_announcement.py:178
-msgid "Announcement Mode"
+#: src/bot/handlers/announcement/get_announcement.py:232
+#, python-brace-format
+msgid "**Announcement Page {page}**"
 msgstr "Режим объявления"
 
-#: src/bot/handlers/announcement/get_announcement.py:198
-#, fuzzy
-msgid "My Listings Mode"
-msgstr "Список объявлений"
-
-#: src/bot/handlers/announcement/get_announcement.py:246
-msgid "Invalid coordinates data."
+#: src/bot/handlers/announcement/get_announcement.py:337
+msgid "Invalid coordinates."
 msgstr "Недопустимые данные координат."
 
-#: src/bot/handlers/announcement/get_announcement.py:248
-msgid "Geolocation not set for this listing."
+#: src/bot/handlers/announcement/get_announcement.py:339
+msgid "Location not found for this item."
 msgstr "Геолокация не установлена для этого объявления."
 
-#: src/bot/handlers/announcement/get_announcement.py:251
-#: src/bot/keyboards/reply/navigation.py:33
-msgid "Back to Menu"
-msgstr "Вернуться к меню"
-
-#: src/bot/handlers/announcement/get_announcement.py:278
-#, fuzzy
+#: src/bot/handlers/announcement/get_announcement.py:362
 msgid "Welcome back! Select an action:"
 msgstr "Добро пожаловать в Swipe! Выберите действие:"
 
-#: src/bot/handlers/auth/login.py:31 src/bot/handlers/auth/login.py:72
+#: src/bot/handlers/auth/login.py:34 src/bot/handlers/auth/login.py:76
 msgid "Please enter your **Email**:"
 msgstr "Введите свой **адрес электронной почты**:"
 
-#: src/bot/handlers/auth/login.py:47 src/bot/handlers/auth/registration.py:117
+#: src/bot/handlers/auth/login.py:51 src/bot/handlers/auth/registration.py:126
 msgid "Invalid email format. Try again:"
 msgstr "Неверный формат адреса электронной почты. Повторите попытку:"
 
-#: src/bot/handlers/auth/login.py:58
+#: src/bot/handlers/auth/login.py:62
 msgid "Enter your **Password**:"
 msgstr "Введите свой **пароль**:"
 
-#: src/bot/handlers/auth/login.py:77 src/bot/handlers/auth/login.py:97
-#: src/bot/keyboards/reply/login.py:13
+#: src/bot/handlers/auth/login.py:81 src/bot/handlers/auth/login.py:103
+#: src/bot/keyboards/reply/login.py:17
 msgid "Forgot Password?"
 msgstr "Забыли пароль?"
 
-#: src/bot/handlers/auth/login.py:108
+#: src/bot/handlers/auth/login.py:114
 msgid "Logging in..."
 msgstr "Вход в систему..."
 
-#: src/bot/handlers/auth/login.py:122
+#: src/bot/handlers/auth/login.py:128
 msgid "**Successfully logged in!**"
 msgstr "**Успешно вошли в систему!**"
 
-#: src/bot/handlers/auth/login.py:129
+#: src/bot/handlers/auth/login.py:137
 #, python-brace-format
 msgid "Login failed: {error}"
 msgstr "Не удалось войти: {error}"
 
-#: src/bot/handlers/auth/registration.py:33
+#: src/bot/handlers/auth/registration.py:34
 msgid ""
 "**Registration Step 1/5**\n"
 "\n"
@@ -307,40 +293,20 @@ msgstr ""
 "\n"
 "Введите свое **Имя**:"
 
-#: src/bot/handlers/auth/registration.py:48
-msgid "Too short. Please enter real First Name:"
-msgstr "Слишком короткое. Введите настоящее имя:"
-
-#: src/bot/handlers/auth/registration.py:58
-msgid ""
-"**Step 2/5**\n"
-"\n"
-"Enter your **Last Name**:"
-msgstr ""
-"**Шаг 2/5**\n"
-"\n"
-"Введите свою **фамилию**:"
-
-#: src/bot/handlers/auth/registration.py:70
-#, fuzzy
+#: src/bot/handlers/auth/registration.py:45
 msgid "Registration canceled."
 msgstr "Регистрация отменена"
 
-#: src/bot/handlers/auth/registration.py:87
-msgid ""
-"**Step 3/5**\n"
-"\n"
-"Enter your **Email**:"
-msgstr ""
-"**Шаг 3/5**\n"
-"\n"
-"Введите свой **адрес электронной почты**:"
-
-#: src/bot/handlers/auth/registration.py:102
+#: src/bot/handlers/auth/registration.py:54
 msgid "Enter your **First Name**:"
 msgstr "Введите свое **имя**"
 
-#: src/bot/handlers/auth/registration.py:128
+#: src/bot/handlers/auth/registration.py:65
+msgid "Enter your **Last Name**:"
+msgstr "Введите свою **фамилию**:"
+
+#: src/bot/handlers/auth/registration.py:77
+#: src/bot/handlers/auth/registration.py:136
 msgid ""
 "**Step 4/5**\n"
 "\n"
@@ -352,15 +318,36 @@ msgstr ""
 "Поделитесь своим **номером телефона**, нажав кнопку ниже, или введите его"
 " вручную. (+123...):"
 
-#: src/bot/handlers/auth/registration.py:145
-msgid "Enter your **Last Name**:"
-msgstr "Введите свою **фамилию**:"
+#: src/bot/handlers/auth/registration.py:90
+msgid "Too short. Please enter real First Name:"
+msgstr "Слишком короткое. Введите настоящее имя:"
 
-#: src/bot/handlers/auth/registration.py:164
+#: src/bot/handlers/auth/registration.py:99
+msgid ""
+"**Step 2/5**\n"
+"\n"
+"Enter your **Last Name**:"
+msgstr ""
+"**Шаг 2/5**\n"
+"\n"
+"Введите свою **фамилию**:"
+
+#: src/bot/handlers/auth/registration.py:114
+#: src/bot/handlers/auth/registration.py:153
+msgid ""
+"**Step 3/5**\n"
+"\n"
+"Enter your **Email**:"
+msgstr ""
+"**Шаг 3/5**\n"
+"\n"
+"Введите свой **адрес электронной почты**:"
+
+#: src/bot/handlers/auth/registration.py:183
 msgid "Invalid phone format. Please use +123456789."
 msgstr "Неверный формат телефона. Пожалуйста, используйте +123456789."
 
-#: src/bot/handlers/auth/registration.py:176
+#: src/bot/handlers/auth/registration.py:198
 msgid ""
 "**Step 5/5**\n"
 "\n"
@@ -370,10 +357,6 @@ msgstr ""
 "\n"
 "Создайте **пароль** для своей учетной записи:"
 
-#: src/bot/handlers/auth/registration.py:191
-msgid "Share your **Phone Number**:"
-msgstr "Поделитесь своим **номером телефона**:"
-
 #: src/bot/handlers/auth/registration.py:209
 msgid "Password must be at least 6 characters."
 msgstr "Пароль должен состоять как минимум из 6 символов."
@@ -382,7 +365,7 @@ msgstr "Пароль должен состоять как минимум из 6 
 msgid "Sending data to server..."
 msgstr "Отправка данных на сервер..."
 
-#: src/bot/handlers/auth/registration.py:230
+#: src/bot/handlers/auth/registration.py:232
 #, python-brace-format
 msgid ""
 "Data accepted!\n"
@@ -397,8 +380,8 @@ msgstr ""
 "\n"
 "**Введите код ниже:**"
 
-#: src/bot/handlers/auth/registration.py:244
-#: src/bot/handlers/auth/registration.py:306
+#: src/bot/handlers/auth/registration.py:247
+#: src/bot/handlers/auth/registration.py:316
 msgid ""
 "**You are already registered!**\n"
 "\n"
@@ -408,7 +391,7 @@ msgstr ""
 "\n"
 "Пожалуйста, войдите в систему."
 
-#: src/bot/handlers/auth/registration.py:251
+#: src/bot/handlers/auth/registration.py:254
 #, python-brace-format
 msgid ""
 "Registration failed: {error}\n"
@@ -419,8 +402,8 @@ msgstr ""
 "\n"
 "Попробуйте изменить данные или отменить."
 
-#: src/bot/handlers/auth/registration.py:286
-#, fuzzy, python-brace-format
+#: src/bot/handlers/auth/registration.py:287
+#, python-brace-format
 msgid ""
 "**Registration Successful!**\n"
 "\n"
@@ -441,7 +424,7 @@ msgstr ""
 "\n"
 "Вы сейчас вошли в систему!"
 
-#: src/bot/handlers/auth/registration.py:313
+#: src/bot/handlers/auth/registration.py:323
 #, python-brace-format
 msgid ""
 "Code verification failed: {error}.\n"
@@ -450,7 +433,7 @@ msgstr ""
 "Проверка кода не удалась: {error}.\n"
 "Проверьте код и попробуйте еще раз:"
 
-#: src/bot/handlers/auth/reset_password.py:32
+#: src/bot/handlers/auth/reset_password.py:35
 msgid ""
 "**Password Reset**\n"
 "\n"
@@ -460,77 +443,73 @@ msgstr ""
 "\n"
 "Введите свой **адрес электронной почты**:"
 
-#: src/bot/handlers/auth/reset_password.py:57
+#: src/bot/handlers/auth/reset_password.py:60
 msgid "Code sent. **Enter the code:**"
 msgstr "Код отправлен. **Введите код:**"
 
-#: src/bot/handlers/auth/reset_password.py:62
-#: src/bot/handlers/auth/reset_password.py:111
+#: src/bot/handlers/auth/reset_password.py:69
+#: src/bot/handlers/auth/reset_password.py:123
 #, python-brace-format
 msgid "Error: {error}"
 msgstr "Ошибка: {error}"
 
-#: src/bot/handlers/auth/reset_password.py:80
+#: src/bot/handlers/auth/reset_password.py:88
 msgid "Code accepted. **Enter NEW password:**"
 msgstr "Код принят. **Введите НОВЫЙ пароль:**"
 
-#: src/bot/handlers/auth/reset_password.py:105
+#: src/bot/handlers/auth/reset_password.py:113
 msgid "Password updated! Login now."
 msgstr "Пароль обновлен! Войдите сейчас."
 
-#: src/bot/keyboards/inline/announcement.py:18
-#, fuzzy
+#: src/bot/keyboards/inline/announcement.py:15
 msgid "Location"
 msgstr "Вход"
 
-#: src/bot/keyboards/inline/main_menu.py:16
+#: src/bot/keyboards/inline/main_menu.py:20
 msgid "Listings"
 msgstr "Список объявлений"
 
-#: src/bot/keyboards/inline/main_menu.py:18
+#: src/bot/keyboards/inline/main_menu.py:22
 msgid "Create Listing"
 msgstr "Создать объявление"
 
-#: src/bot/keyboards/inline/main_menu.py:20
+#: src/bot/keyboards/inline/main_menu.py:24
 msgid "My Profile"
 msgstr "Мой профиль"
 
-#: src/bot/keyboards/inline/main_menu.py:21
+#: src/bot/keyboards/inline/main_menu.py:25
 msgid "Logout"
 msgstr "Выход из системы"
 
-#: src/bot/keyboards/inline/profile.py:16
-#, fuzzy
+#: src/bot/keyboards/inline/profile.py:20
 msgid "My Listings"
 msgstr "Список объявлений"
 
-#: src/bot/keyboards/inline/start.py:15
+#: src/bot/keyboards/inline/start.py:19
 msgid "Login"
 msgstr "Вход"
 
-#: src/bot/keyboards/inline/start.py:17
+#: src/bot/keyboards/inline/start.py:21
 msgid "Registration"
 msgstr "Регистрация"
 
-#: src/bot/keyboards/inline/start.py:20
+#: src/bot/keyboards/inline/start.py:24
 msgid "Язык / Language"
 msgstr ""
 
-#: src/bot/keyboards/reply/announcement.py:13
-#, fuzzy
+#: src/bot/keyboards/reply/announcement.py:17
 msgid "Share Location"
 msgstr "Поделиться моими контактами"
 
-#: src/bot/keyboards/reply/get_contact.py:14
+#: src/bot/keyboards/reply/get_contact.py:18
 msgid "Share my contact"
 msgstr "Поделиться моими контактами"
 
-#: src/bot/keyboards/reply/get_contact.py:15 src/bot/utils/ui.py:21
-#, fuzzy
+#: src/bot/keyboards/reply/get_contact.py:20 src/bot/utils/ui.py:27
 msgid "Cancel Registration"
 msgstr "Отменить регистрацию"
 
-#: src/bot/utils/ui.py:24
+#: src/bot/utils/ui.py:31
 msgid "Main Menu:"
 msgstr "Главное меню:"
 
@@ -565,3 +544,12 @@ msgstr "Главное меню:"
 
 #~ msgid "Loading listings..."
 #~ msgstr "Вход в систему..."
+
+#~ msgid "Error displaying listing. Please try again."
+#~ msgstr "Ошибка при отображении списка. Повторите попытку."
+
+#~ msgid "My Listings Mode"
+#~ msgstr "Список объявлений"
+
+#~ msgid "Share your **Phone Number**:"
+#~ msgstr "Поделитесь своим **номером телефона**:"

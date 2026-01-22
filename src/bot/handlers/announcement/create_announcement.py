@@ -1,7 +1,6 @@
 """src/bot/handlers/announcement/create_announcement.py."""
 
 import logging
-
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
@@ -19,7 +18,6 @@ from src.bot.utils import (
     handle_cancel,
     cleanup_last_step,
     remove_reply_keyboard,
-    execute_with_refresh,
     encode_image_to_base64,
 )
 from src.database import BotUser
@@ -272,7 +270,8 @@ async def finish_creation(message: Message, state: FSMContext):
     }
 
     user = await BotUser.find_one(BotUser.telegram_id == message.from_user.id)
-    api = SwipeApiClient()
+
+    api = SwipeApiClient(user=user)
 
     await cleanup_last_step(state, message)
 
@@ -282,9 +281,8 @@ async def finish_creation(message: Message, state: FSMContext):
 
     try:
         logger.info("Submitting new listing for user %s", user.telegram_id)
-        await execute_with_refresh(
-            user, api.announcements.create_announcement, data=payload
-        )
+
+        await api.announcements.create_announcement(data=payload)
 
         await wait_msg.delete()
         await message.answer(
@@ -297,8 +295,12 @@ async def finish_creation(message: Message, state: FSMContext):
     except SwipeAPIError as e:
         logger.error("Failed to create listing for user %s: %s", user.telegram_id, e)
         await wait_msg.delete()
-        await message.answer(
-            _("Failed to create listing: {error}").format(error=e.message),
-            reply_markup=get_main_menu_keyboard(),
-        )
+
+        if e.status_code == 401:
+            await message.answer(_("Session expired. Please login again."))
+        else:
+            await message.answer(
+                _("Failed to create listing: {error}").format(error=e.message),
+                reply_markup=get_main_menu_keyboard(),
+            )
         await state.clear()

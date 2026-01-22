@@ -30,3 +30,24 @@ def get_done_keyboard() -> ReplyKeyboardMarkup:
     builder.button(text=_("Cancel"))
     builder.adjust(1)
     return builder.as_markup(resize_keyboard=True)
+
+
+def get_listings_reply_keyboard(has_prev: bool, has_next: bool) -> ReplyKeyboardMarkup:
+    """
+    Returns the reply keyboard for the listings mode with pagination.
+    """
+    builder = ReplyKeyboardBuilder()
+
+    if has_prev:
+        builder.button(text="⬅️")
+    if has_next:
+        builder.button(text="➡️")
+
+    builder.button(text=_("Back to Menu"))
+
+    if has_prev and has_next:
+        builder.adjust(2, 1)
+    else:
+        builder.adjust(1, 1)
+
+    return builder.as_markup(resize_keyboard=True)
